@@ -11,9 +11,9 @@ import java.util.List;
 
 public class RaftConfig {
 
-  private int mCurrentTerm;
-  private int mVotedFor;
-  private Path mConfigPath;
+  private int mCurrentTerm=0;
+  private int mVotedFor=0;
+  private Path mConfigPath=null;
   
   final private String CURRENT_TERM = "CURRENT_TERM";
   final private String VOTED_FOR = "VOTED_FOR";
@@ -22,7 +22,7 @@ public class RaftConfig {
   public RaftConfig (String file) {
 
     try {
-      mConfigPath = FileSystems.getDefault().getPath(".", file);
+      mConfigPath = FileSystems.getDefault().getPath (file);
       String delims = "=";
       List<String> lines = Files.readAllLines (mConfigPath, 
 					       StandardCharsets.US_ASCII);

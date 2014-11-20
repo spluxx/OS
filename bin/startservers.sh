@@ -3,8 +3,8 @@
 # script directory
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-if [ "$#" -ne 6 ]; then
-    echo "usage: startservers.sh <num servers> <rmi port> <num servers to fail> <time to fail servers (seconds)> <time for servers to restart (seconds)> <time to simulate system (seconds)>"
+if [ "$#" -ne 8 ]; then
+    echo "usage: startservers.sh <num servers> <rmi port> <num servers to fail> <time to fail servers (seconds)> <time for servers to restart (seconds)> <time to simulate system (seconds)> <log files dir> <config files dir>"
     exit;
 fi
 
@@ -19,6 +19,10 @@ TIME_TO_RESTART="$5"
 echo "Failed servers restart after $TIME_TO_RESTART seconds"
 TIME_TO_SIMULATE="$6"
 echo "Simulation will last $TIME_TO_SIMULATE seconds"
+LOG_DIR="$7"
+echo "Reading log file from $LOG_DIR"
+CONFIG_DIR="$8"
+echo "Reading config file from $CONFIG_DIR"
 
 echo "Restarting rmiregistry"
 
@@ -37,7 +41,7 @@ declare -a SERVER_PIDS
 
 for (( id=1; id<=$NUM_SERVERS; id++ ))
 do
-    java -classpath "$SCRIPT_DIR" -Djava.rmi.server.codebase=file://localhost/$SCRIPT_DIR/ edu.duke.raft.StartServer 1098 $id &
+    java -classpath "$SCRIPT_DIR" -Djava.rmi.server.codebase=file://localhost/$SCRIPT_DIR/ edu.duke.raft.StartServer 1098 "$id" "$LOG_DIR" "$CONFIG_DIR"&
     PID="$!"
     SERVER_PIDS[$id]="$PID"
     echo "Starting server S$id at $PID"

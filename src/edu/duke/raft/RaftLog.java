@@ -19,7 +19,7 @@ public class RaftLog {
   public RaftLog (String file) {
     mEntries = new LinkedList<Entry> ();
     try {
-      mLogPath = FileSystems.getDefault().getPath(".", file);
+      mLogPath = FileSystems.getDefault().getPath (file);
       String delims = " ";
       List<String> lines = Files.readAllLines (mLogPath, 
 					       StandardCharsets.US_ASCII);
@@ -27,7 +27,7 @@ public class RaftLog {
       
       for (String line : lines) {
 	String[] tokens = line.split (delims);
-	if ((tokens != null) && (tokens.length == 2)) {
+	if ((tokens != null) && (tokens.length > 0)) {
 	  e = new Entry (Integer.parseInt (tokens[1]),
 			 Integer.parseInt (tokens[0]));
 	  mEntries.add (e);
