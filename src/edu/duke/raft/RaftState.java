@@ -1,19 +1,29 @@
 package edu.duke.raft;
 
-public interface RaftState {
-  // @param latest term the server has seen
-  // @param candidate voted for in current term; 0, if none
-  // @param log containing server's entries
-  // @param index of highest entry known to be committed
-  // @param index of highest entry applied to state machine
-  public void initialize (int currentTerm, 
-			  int votedFor,
-			  RaftLog log,
-			  int commitIndex,
-			  int lastApplied);
+public abstract class RaftState {
+  // latest term the server has seen
+  protected static int mCurrentTerm;
+  // candidate voted for in current term; 0, if none
+  protected static int mVotedFor;
+  // log containing server's entries
+  protected static RaftLog mLog;
+  // index of highest entry known to be committed
+  protected static int mCommitIndex;
+  // index of highest entry applied to state machine
+  protected static int mLastApplied;
 
-  // @param the server's next state
-  public void initializeNextState (RaftState state);
+
+  public final void initialize (int currentTerm, 
+				int votedFor,
+				RaftLog log,
+				int commitIndex,
+				int lastApplied) {
+    mCurrentTerm = currentTerm;
+    mVotedFor = votedFor;
+    mLog = log;
+    mCommitIndex = commitIndex;    
+    mLastApplied = lastApplied;
+  }  
 
   // @param candidate’s term
   // @param candidate requesting vote
@@ -21,10 +31,10 @@ public interface RaftState {
   // @param term of candidate’s last log entry
   // @return 0, if server votes for candidate; otherwise, server's
   // current term
-  public int requestVote (int candidateTerm,
-			  int candidateID,
-			  int lastLogIndex,
-			  int lastLogTerm);
+  abstract public int requestVote (int candidateTerm,
+				   int candidateID,
+				   int lastLogIndex,
+				   int lastLogTerm);
 
   // @param leader’s term
   // @param current leader
@@ -34,15 +44,15 @@ public interface RaftState {
   // @param index of highest committed entry
   // @return 0, if server appended entries; otherwise, server's
   // current term
-  public int appendEntries (int leaderTerm,
-			    int leaderID,
-			    int prevLogIndex,
-			    int prevLogTerm
-			    Entry[] entries,
-			    int leaderCommit);
+  abstract public int appendEntries (int leaderTerm,
+				     int leaderID,
+				     int prevLogIndex,
+				     int prevLogTerm,
+				     Entry[] entries,
+				     int leaderCommit);
 
   // @param id of the timer that timed out
-  public void handleTimeout (int timerID);
+  abstract public void handleTimeout (int timerID);
 }
 
   
