@@ -37,5 +37,10 @@ public class CandidateState extends RaftState {
 
   // @param id of the timer that timed out
   public void handleTimeout (int timerID) {
+    synchronized (mLock) {
+      // check the election results
+      // if we won, transition to LeaderState
+      // if we lost, transition to FollowerState
+    }
   }
 }

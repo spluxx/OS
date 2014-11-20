@@ -37,5 +37,10 @@ public class LeaderState extends RaftState {
 
   // @param id of the timer that timed out
   public void handleTimeout (int timerID) {
+    synchronized (mLock) {
+      // check the append results
+      // 
+      // 
+    }
   }
 }

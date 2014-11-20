@@ -1,5 +1,9 @@
 package edu.duke.raft;
 
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -16,19 +20,24 @@ public abstract class RaftState {
   protected static int mLastApplied;
   // lock protecting access to RaftResponses
   protected static Object mLock;
+  // port for rmiregistry on localhost
+  protected static int mRmiPort;
+
 
   // initializes the server's state
   public static void initializeServer (int currentTerm, 
 				       int votedFor,
 				       RaftLog log,
 				       int commitIndex,
-				       int lastApplied) {
+				       int lastApplied, 
+				       int rmiPort) {
     mCurrentTerm = currentTerm;
     mVotedFor = votedFor;
     mLog = log;
     mCommitIndex = commitIndex;    
     mLastApplied = lastApplied;
     mLock = new Object ();
+    mRmiPort = rmiPort;    
   } 
 
   // @param milliseconds for the timer to wait
@@ -48,6 +57,77 @@ public abstract class RaftState {
     timer.schedule (task, millis);
     return timer;
   }
+
+  private final String getRmiUrl (int serverID) {
+    return "rmi://localhost:" + mRmiPort + "/S" + serverID;
+  }
+  
+  // called to make request vote RPC on another server
+  // results will be stored in RaftResponses
+  protected final void remoteRequestVote (int serverID,
+					  int candidateTerm,
+					  int candidateID,
+					  int lastLogIndex,
+					  int lastLogTerm) {
+    new Thread () {
+      public void run () {	
+	String url = getRmiUrl (serverID);
+	try {
+	  RaftServer server = (RaftServer) Naming.lookup(url);
+	  int response = server.requestVote (candidateTerm,
+					     candidateID,
+					     lastLogIndex,
+					     lastLogTerm);
+	  synchronized (RaftState.mLock) {
+	    RaftResponses.setVote (serverID, 
+				   response, 
+				   candidateTerm);
+	  }
+	} catch (MalformedURLException me) {
+	  System.out.println (me.getMessage());
+	} catch (RemoteException re) {
+	  System.out.println (re.getMessage());
+	} catch (NotBoundException nbe) {
+	  System.out.println (nbe.getMessage());
+	}
+      }
+    }.start ();
+  }  
+
+  // called to make request vote RPC on another server
+  protected final void remoteAppendEntries (int serverID,
+					    int leaderTerm,
+					    int leaderID,
+					    int prevLogIndex,
+					    int prevLogTerm,
+					    Entry[] entries,
+					    int leaderCommit) {
+    new Thread () {
+      public void run () {	
+	String url = getRmiUrl (serverID);
+	try {
+	  RaftServer server = (RaftServer) Naming.lookup(url);
+	  int response = server.appendEntries (leaderTerm,
+					       leaderID,
+					       prevLogIndex,
+					       prevLogTerm,
+					       entries,
+					       leaderCommit);
+	  synchronized (RaftState.mLock) {
+	    RaftResponses.setAppendResponse (serverID, 
+					     response, 
+					     leaderTerm);
+	  }
+	} catch (MalformedURLException me) {
+	  System.out.println (me.getMessage());
+	} catch (RemoteException re) {
+	  System.out.println (re.getMessage());
+	} catch (NotBoundException nbe) {
+	  System.out.println (nbe.getMessage());
+	}
+      }
+    }.start ();
+  }  
 
   // called to activate the state
   abstract public void go ();

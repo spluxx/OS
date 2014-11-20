@@ -22,7 +22,7 @@ public class RaftResponses {
     mTerm = term;
     mVotes = new int[size];
     clearVotes (term);
-    mAppendResponses = int [size];    
+    mAppendResponses = new int[size];    
     clearAppendResponses (term);
   }  
 
@@ -47,7 +47,7 @@ public class RaftResponses {
   public static boolean clearVotes (int term) {
     if (term == mTerm) {
       for (int i=0; i<mVotes.length; i++) {
-	mVotes = -1;
+	mVotes[i] = -1;
       } 
       return true;
     }    
@@ -83,7 +83,7 @@ public class RaftResponses {
   public static boolean clearAppendResponses (int term) {
     if (term == mTerm) {
       for (int i=0; i<mAppendResponses.length; i++) {
-	mAppendResponses = -1;
+	mAppendResponses[i] = -1;
       }
       return true;
     }
@@ -96,8 +96,8 @@ public class RaftResponses {
   // internal term is not equal to the paramter.
   // @return true if response was set, false if not
   public static boolean setAppendResponse (int serverID, 
-				    int response, 
-				    int term) {
+					   int response, 
+					   int term) {
     if (term == mTerm) {
       mAppendResponses[serverID] = response;
       return true;      

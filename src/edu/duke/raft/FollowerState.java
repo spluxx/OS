@@ -3,6 +3,7 @@ package edu.duke.raft;
 public class FollowerState extends RaftState {
 
   public void go () {
+    // (1) set a timer to wait for a heartbeat message
   }
   
   // @param candidate’s term

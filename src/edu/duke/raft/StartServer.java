@@ -18,7 +18,10 @@ public class StartServer {
     System.out.println ("Binding server on rmiregistry " + url);
 
     try {
-      RaftServer server = new RaftServerImpl (id);
+      RaftState.initializeServer (0, -1, null, -1, -1, port);
+      RaftServerImpl server = new RaftServerImpl (id);
+      server.setState (new FollowerState ());
+      
       Naming.rebind(url, server);
     } catch (MalformedURLException me) {
       System.out.println ("S" + id + me.getMessage());

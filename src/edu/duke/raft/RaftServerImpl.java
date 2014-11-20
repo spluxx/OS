@@ -35,7 +35,10 @@ public class RaftServerImpl extends UnicastRemoteObject
     System.out.println ("[S" + 
 			mID + 
 			"] Received requestVote request.");
-    return 0;
+    return mState.requestVote (candidateTerm, 
+			       candidateID, 
+			       lastLogIndex,
+			       lastLogTerm);
   }
 
   // @return 0, if server appended entries; otherwise, server's
@@ -50,7 +53,12 @@ public class RaftServerImpl extends UnicastRemoteObject
     System.out.println ("[S" +
 			mID +
 			"] Received appendEntries request.");
-    return 0;
+    return mState.appendEntries (leaderTerm,
+				 leaderID,
+				 prevLogIndex,
+				 prevLogTerm,
+				 entries,
+				 leaderCommit);
   }
 }
 
