@@ -7,8 +7,8 @@ import java.rmi.server.UnicastRemoteObject;
 public class RaftServerImpl extends UnicastRemoteObject 
   implements RaftServer {
 
-  private int mID;
-  private RaftMode mMode;
+  private static int mID;
+  private static RaftMode mMode;
   
   // @param server's unique id
   public RaftServerImpl (int serverID) throws RemoteException {
@@ -16,7 +16,7 @@ public class RaftServerImpl extends UnicastRemoteObject
   }
 
   // @param the server's current mode
-  public void setMode (RaftMode mode) {
+  public static void setMode (RaftMode mode) {
     mMode = mode;
     mode.go ();    
   }

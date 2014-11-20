@@ -26,12 +26,13 @@ public class StartServer {
     int lastApplied = log.getLastIndex ();
 
     try {
-      RaftState.initializeServer (config,
-				  log,
-				  lastApplied, 
-				  port);
+      RaftMode.initializeServer (config,
+				 log,
+				 lastApplied, 
+				 port, 
+				 id);
       RaftServerImpl server = new RaftServerImpl (id);
-      server.setMode (new FollowerMode ());
+      RaftServerImpl.setMode (new FollowerMode ());
       
       Naming.rebind(url, server);
     } catch (MalformedURLException me) {
