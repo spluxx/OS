@@ -8,10 +8,17 @@ public class RaftServerImpl extends UnicastRemoteObject
   implements RaftServer {
 
   private int mID;
+  private RaftState mState;
   
   // @param server's unique id
   public RaftServerImpl (int serverID) throws RemoteException {
     mID = serverID;
+  }
+
+  // @param the server's current state
+  public void setState (RaftState state) {
+    mState = state;
+    state.go ();    
   }
 
   // @param candidate’s term

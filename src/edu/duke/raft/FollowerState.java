@@ -1,6 +1,10 @@
 package edu.duke.raft;
 
 public class FollowerState extends RaftState {
+
+  public void go () {
+  }
+  
   // @param candidate’s term
   // @param candidate requesting vote
   // @param index of candidate’s last log entry
