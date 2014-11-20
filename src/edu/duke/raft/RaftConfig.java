@@ -13,10 +13,12 @@ public class RaftConfig {
 
   private int mCurrentTerm=0;
   private int mVotedFor=0;
+  private int mNumServers=0;
   private Path mConfigPath=null;
   
   final private String CURRENT_TERM = "CURRENT_TERM";
   final private String VOTED_FOR = "VOTED_FOR";
+  final private String NUM_SERVERS = "NUM_SERVERS";
 
   // @param file where config log is stored
   public RaftConfig (String file) {
@@ -36,6 +38,8 @@ public class RaftConfig {
 	    mCurrentTerm = Integer.parseInt (value);
 	  } else if (field.equals (VOTED_FOR)) {
 	    mVotedFor = Integer.parseInt (value);
+	  } else if (field.equals (NUM_SERVERS)) {
+	    mNumServers = Integer.parseInt (value);
 	  } else {
 	  System.out.println ("Error parsing " + 
 			      file + 
@@ -98,6 +102,11 @@ public class RaftConfig {
   public int getVotedFor () {
     return mVotedFor;
   }    
+
+  // @return the number of server
+  public int getNumServers () {
+    return mNumServers;
+  }
 
   public String toString () {
     return new String (CURRENT_TERM + 
