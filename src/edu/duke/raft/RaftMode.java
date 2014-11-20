@@ -21,19 +21,22 @@ public abstract class RaftMode {
   protected static Object mLock;
   // port for rmiregistry on localhost
   protected static int mRmiPort;
-
+  // numeric id of this server
+  protected static int mID;
 
   // initializes the server's mode
   public static void initializeServer (RaftConfig config,
 				       RaftLog log,
 				       int lastApplied, 
-				       int rmiPort) {
+				       int rmiPort,
+				       int id) {
     mConfig = config;    
     mLog = log;
     mCommitIndex = 0;    
     mLastApplied = lastApplied;
     mLock = new Object ();
-    mRmiPort = rmiPort;    
+    mRmiPort = rmiPort;
+    mID = id;
   } 
 
   // @param milliseconds for the timer to wait
