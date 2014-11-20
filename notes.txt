@@ -1,1 +1,7 @@
+To compile:
+
+javac -d ../../../../bin  -classpath ../../../../bin:../../../ RaftState.java 
+
+To run:
+
 ../../../../bin/startservers.sh 21 1098 2 5 1 15 2> /dev/null
