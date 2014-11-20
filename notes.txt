@@ -1,7 +1,7 @@
-To compile:
+To compile from the directory raft/src/edu/duke/raft:
 
-javac -d ../../../../bin  -classpath ../../../../bin:../../../ RaftState.java 
+javac -d ../../../../bin  -classpath ../../../../bin:../../../ *.java 
 
-To run:
+An example simulation run from from the directory raft/src/edu/duke/raft:
 
 ../../../../bin/startservers.sh 21 1098 2 5 1 15 2> /dev/null
