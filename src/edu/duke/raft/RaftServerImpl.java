@@ -8,17 +8,17 @@ public class RaftServerImpl extends UnicastRemoteObject
   implements RaftServer {
 
   private int mID;
-  private RaftState mState;
+  private RaftMode mMode;
   
   // @param server's unique id
   public RaftServerImpl (int serverID) throws RemoteException {
     mID = serverID;
   }
 
-  // @param the server's current state
-  public void setState (RaftState state) {
-    mState = state;
-    state.go ();    
+  // @param the server's current mode
+  public void setMode (RaftMode mode) {
+    mMode = mode;
+    mode.go ();    
   }
 
   // @param candidate’s term
@@ -35,10 +35,10 @@ public class RaftServerImpl extends UnicastRemoteObject
     System.out.println ("[S" + 
 			mID + 
 			"] Received requestVote request.");
-    return mState.requestVote (candidateTerm, 
-			       candidateID, 
-			       lastLogIndex,
-			       lastLogTerm);
+    return mMode.requestVote (candidateTerm, 
+			      candidateID, 
+			      lastLogIndex,
+			      lastLogTerm);
   }
 
   // @return 0, if server appended entries; otherwise, server's
@@ -53,12 +53,12 @@ public class RaftServerImpl extends UnicastRemoteObject
     System.out.println ("[S" +
 			mID +
 			"] Received appendEntries request.");
-    return mState.appendEntries (leaderTerm,
-				 leaderID,
-				 prevLogIndex,
-				 prevLogTerm,
-				 entries,
-				 leaderCommit);
+    return mMode.appendEntries (leaderTerm,
+				leaderID,
+				prevLogIndex,
+				prevLogTerm,
+				entries,
+				leaderCommit);
   }
 }
 

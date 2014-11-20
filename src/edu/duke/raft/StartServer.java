@@ -6,21 +6,32 @@ import java.rmi.RemoteException;
 
 public class StartServer {
   public static void main (String[] args) {
-    if (args.length != 2) {
-      System.out.println ("usage: java edu.duke.raft.StartServer -Djava.rmi.server.codebase=<codebase url> <int: rmiregistry port> <int: server id>");
+    if (args.length != 3) {
+      System.out.println ("usage: java edu.duke.raft.StartServer -Djava.rmi.server.codebase=<codebase url> <int: rmiregistry port> <int: server id> <log file> <config file>");
       System.exit(1);
     }
     int port = Integer.parseInt (args[0]);    
     int id = Integer.parseInt (args[1]);
+    String logPath = args[2];
+    String configPath = args[3];
     
     String url = "rmi://localhost:" + port + "/S" + id;
     System.out.println ("Starting S" + id);
     System.out.println ("Binding server on rmiregistry " + url);
 
+    int commitIndex = 0;
+
+    RaftConfig config = new RaftConfig (configPath);
+    RaftLog log = new RaftLog (logPath);
+    int lastApplied = log.getLastIndex ();
+
     try {
-      RaftState.initializeServer (0, -1, null, -1, -1, port);
+      RaftState.initializeServer (config,
+				  log,
+				  lastApplied, 
+				  port);
       RaftServerImpl server = new RaftServerImpl (id);
-      server.setState (new FollowerState ());
+      server.setMode (new FollowerMode ());
       
       Naming.rebind(url, server);
     } catch (MalformedURLException me) {

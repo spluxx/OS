@@ -7,11 +7,10 @@ import java.rmi.RemoteException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public abstract class RaftState {
-  // latest term the server has seen
-  protected static int mCurrentTerm;
-  // candidate voted for in current term; 0, if none
-  protected static int mVotedFor;
+public abstract class RaftMode {
+  // config containing the latest term the server has seen and
+  // candidate voted for in current term; 0, if none 
+  protected static RaftConfig mConfig;
   // log containing server's entries
   protected static RaftLog mLog;
   // index of highest entry known to be committed
@@ -24,17 +23,14 @@ public abstract class RaftState {
   protected static int mRmiPort;
 
 
-  // initializes the server's state
-  public static void initializeServer (int currentTerm, 
-				       int votedFor,
+  // initializes the server's mode
+  public static void initializeServer (RaftConfig config,
 				       RaftLog log,
-				       int commitIndex,
 				       int lastApplied, 
 				       int rmiPort) {
-    mCurrentTerm = currentTerm;
-    mVotedFor = votedFor;
+    mConfig = config;    
     mLog = log;
-    mCommitIndex = commitIndex;    
+    mCommitIndex = 0;    
     mLastApplied = lastApplied;
     mLock = new Object ();
     mRmiPort = rmiPort;    
@@ -43,15 +39,15 @@ public abstract class RaftState {
   // @param milliseconds for the timer to wait
   // @param a way to identify the timer when handleTimeout is called
   // after the timeout period
-  // @return Timer object that will schedule a call to the state's
+  // @return Timer object that will schedule a call to the mode's
   // handleTimeout method. If an event occurs before the timeout
-  // period, then the state should call the Timer's cancel method.
+  // period, then the mode should call the Timer's cancel method.
   protected final Timer scheduleTimer (long millis,
 				       int timerID) {
     Timer timer = new Timer (false);
     TimerTask task = new TimerTask () {
 	public void run () {
-	  RaftState.this.handleTimeout (timerID);
+	  RaftMode.this.handleTimeout (timerID);
 	}
       };    
     timer.schedule (task, millis);
@@ -78,7 +74,7 @@ public abstract class RaftState {
 					     candidateID,
 					     lastLogIndex,
 					     lastLogTerm);
-	  synchronized (RaftState.mLock) {
+	  synchronized (RaftMode.mLock) {
 	    RaftResponses.setVote (serverID, 
 				   response, 
 				   candidateTerm);
@@ -113,7 +109,7 @@ public abstract class RaftState {
 					       prevLogTerm,
 					       entries,
 					       leaderCommit);
-	  synchronized (RaftState.mLock) {
+	  synchronized (RaftMode.mLock) {
 	    RaftResponses.setAppendResponse (serverID, 
 					     response, 
 					     leaderTerm);
@@ -129,7 +125,7 @@ public abstract class RaftState {
     }.start ();
   }  
 
-  // called to activate the state
+  // called to activate the mode
   abstract public void go ();
 
   // @param candidate’s term
