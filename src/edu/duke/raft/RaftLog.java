@@ -8,6 +8,7 @@ import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.LinkedList;
@@ -19,7 +20,7 @@ public class RaftLog {
   public RaftLog (String file) {
     mEntries = new LinkedList<Entry> ();
     try {
-      mLogPath = FileSystems.getDefault().getPath (file);
+      mLogPath = FileSystems.getDefault ().getPath (file);
       String delims = " ";
       List<String> lines = Files.readAllLines (mLogPath, 
 					       StandardCharsets.US_ASCII);
@@ -40,18 +41,99 @@ public class RaftLog {
     }    
   }
 
-  // @return highest index in log after entries have been appended
+  // @param entries to append (in order of 0 to append.length-1)
+  // @param index of log entry before entries to append
+  // @param term of log entry before entries to append
+  // @return highest index in log after entries have been appended, or
+  // 0 if the append failed.
   public int append (Entry[] entries) {
     try {
       OutputStream out = Files.newOutputStream (mLogPath, 
 						StandardOpenOption.APPEND,
 						StandardOpenOption.SYNC);
       for (Entry entry : entries) {
-	out.write (entry.toString ().getBytes ());
-	out.write ('\n');
-	mEntries.add (entry);
-      }      
+	if (entry != null) {
+	  out.write (entry.toString ().getBytes ());
+	  out.write ('\n');
+	  mEntries.add (entry);
+	} else {
+	  System.out.println ("Tried to append null entry to RaftLog.");
+	  break;
+	}	
+      }
       out.close ();
+    } catch (IOException e) {
+      System.out.println (e.getMessage ());
+    } 
+    return mEntries.size ();
+  }
+
+  // @param entries to append (in order of 0 to append.length-1)
+  // @param index of log entry before entries to append
+  // @param term of log entry before entries to append
+  // @return highest index in log after entries have been appended, if
+  // the entry at prevIndex is not from prevTerm or if the log does
+  // not have an entry at prevIndex, the append request will fail, and
+  // the method will return 0.
+  public int insert (Entry[] entries, int prevIndex, int prevTerm) {
+    try {
+      // Just append to the existing log if we aren't inserting in the
+      // middle
+      if (prevIndex == (mEntries.size () - 1)) {
+	return append (entries);
+      } else if ((mEntries.get (prevIndex) != null) &&
+		 (mEntries.get (prevIndex).term == prevTerm)) {
+	// Because we are inserting in the middle of our log, we
+	// will update our log by creating a temporary on-disk log
+	// with the new entries and then replacing the old on-disk
+	// log with the temporary one.
+
+	// First, create an in-memory copy of the existing log up to
+	// the point where the new entries will be added
+	LinkedList<Entry> tmpEntries = new LinkedList<Entry> ();
+	for (int i=0; i<=prevIndex; i++) {
+	  Entry entry = mEntries.get (i);
+	  tmpEntries.add (entry);
+	}
+	  
+	// Next, add the new entries to temporary in-memory and
+	// on-disk logs
+	Path tmpLogPath = 
+	  FileSystems.getDefault ().
+	  getPath (mLogPath.toAbsolutePath ().toString () + ".tmp");
+	  
+	OutputStream out = 
+	  Files.newOutputStream (tmpLogPath, 
+				 StandardOpenOption.APPEND,
+				 StandardOpenOption.TRUNCATE_EXISTING,
+				 StandardOpenOption.SYNC);
+
+	// Write out the prefix
+	for (Entry entry : tmpEntries) {
+	  out.write (entry.toString ().getBytes ());
+	  out.write ('\n');
+	}
+
+	// Add the new entries
+	for (Entry entry : entries) {
+	  out.write (entry.toString ().getBytes ());
+	  out.write ('\n');
+	  tmpEntries.add (entry);
+	}
+	out.close ();
+
+	// switch the in-memory and on-disk logs to the new versions
+	Files.move (tmpLogPath, 
+		    mLogPath, 
+		    StandardCopyOption.REPLACE_EXISTING,
+		    StandardCopyOption.ATOMIC_MOVE);
+	mEntries = tmpEntries;
+      } else {
+	System.out.println (
+	  "RaftLog: " +
+	  "index and term mismatch, could not insert new log entries.");
+	return 0;
+      }	
     } catch (IOException e) {
       System.out.println (e.getMessage ());
     }
@@ -75,13 +157,12 @@ public class RaftLog {
 
   // @return entry at passed-index, null if none
   public Entry getEntry (int index) {
+    if (index < mEntries.size()) {
+      return mEntries.get (index);
+    }
+    
     return null;
   }
-
-  // @return highest index of appended entries on success, 0 otherwise  
-  public int insertAt (Entry entry, int index) {
-    return 0;
-  } 
 
   public String toString () {
     String toReturn = "{";

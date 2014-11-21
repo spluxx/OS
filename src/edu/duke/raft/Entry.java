@@ -17,6 +17,11 @@ public class Entry implements Serializable {
     this.term = term;
   }
 
+  public Entry (Entry e) {
+    action = e.action;
+    term = e.term;
+  }
+
   public String toString () {
     return term + " " + action;
   }  
