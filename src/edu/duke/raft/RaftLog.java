@@ -38,6 +38,7 @@ public class RaftLog {
       }      
     } catch (IOException e) {
       System.out.println (e.getMessage ());
+      e.printStackTrace();
     }    
   }
 
@@ -49,6 +50,7 @@ public class RaftLog {
   public int append (Entry[] entries) {
     try {
       OutputStream out = Files.newOutputStream (mLogPath, 
+						StandardOpenOption.CREATE,
 						StandardOpenOption.APPEND,
 						StandardOpenOption.SYNC);
       for (Entry entry : entries) {
@@ -64,6 +66,7 @@ public class RaftLog {
       out.close ();
     } catch (IOException e) {
       System.out.println (e.getMessage ());
+      e.printStackTrace();
     } 
     return mEntries.size ();
   }
@@ -81,8 +84,9 @@ public class RaftLog {
       // middle
       if (prevIndex == (mEntries.size () - 1)) {
 	return append (entries);
-      } else if ((mEntries.get (prevIndex) != null) &&
-		 (mEntries.get (prevIndex).term == prevTerm)) {
+      } else if ((prevIndex == -1) ||
+		 ((mEntries.get (prevIndex) != null) &&
+		  (mEntries.get (prevIndex).term == prevTerm))) {
 	// Because we are inserting in the middle of our log, we
 	// will update our log by creating a temporary on-disk log
 	// with the new entries and then replacing the old on-disk
@@ -104,7 +108,7 @@ public class RaftLog {
 	  
 	OutputStream out = 
 	  Files.newOutputStream (tmpLogPath, 
-				 StandardOpenOption.APPEND,
+				 StandardOpenOption.CREATE,
 				 StandardOpenOption.TRUNCATE_EXISTING,
 				 StandardOpenOption.SYNC);
 
@@ -136,6 +140,7 @@ public class RaftLog {
       }	
     } catch (IOException e) {
       System.out.println (e.getMessage ());
+      e.printStackTrace();
     }
      
     return mEntries.size ();
@@ -155,10 +160,10 @@ public class RaftLog {
     return -1;
   }
 
-  // @return entry at passed-index, null if none
+  // @return entry at passed-in index, null if none
   public Entry getEntry (int index) {
-    if (index < mEntries.size()) {
-      return mEntries.get (index);
+    if ((index > -1) && (index < mEntries.size())) {
+      return new Entry (mEntries.get (index));
     }
     
     return null;
@@ -183,11 +188,26 @@ public class RaftLog {
     }
     String filename = args[0];
     RaftLog log = new RaftLog (filename);
-    System.out.println ("RaftLog: " + log);
+    System.out.println ("Initial RaftLog: " + log);
 
+    System.out.println("Appending new entry (0 0).");
     Entry[] entries = new Entry[1];
     entries[0] = new Entry (0, 0);
     log.append (entries);
+    System.out.println ("Resulting RaftLog: " + log);
+
+    Entry firstEntry = log.getEntry (0);
+    Entry newEntry = new Entry (1, 3);
+
+    System.out.println("Inserting entry " + newEntry + " at index 1.");
+    entries[0] = newEntry;
+    log.insert (entries, 0, firstEntry.term);
+    System.out.println ("Resulting RaftLog: " + log);
+
+    System.out.println("Inserting entry " + firstEntry + " at index 0.");
+    entries[0] = firstEntry;
+    log.insert (entries, -1, -1);
+    System.out.println ("Resulting RaftLog: " + log);
   }
 
 }
