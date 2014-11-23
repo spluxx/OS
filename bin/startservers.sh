@@ -57,8 +57,9 @@ declare -a SERVER_PIDS
 
 for (( id=1; id<=$NUM_SERVERS; id++ ))
 do
-    # make sure the config and log files are there
-    touch "$LOG_DIR/$id.log"
+    # initialize servers' log and config files
+    cp "$LOG_DIR/init.log" "$LOG_DIR/$id.log"
+    cp "$CONFIG_DIR/init.config" "$CONFIG_DIR/$id.config"
     echo "NUM_SERVERS=$NUM_SERVERS" >> "$CONFIG_DIR/$id.config"
     java -classpath "$SCRIPT_DIR" -Djava.rmi.server.codebase=file://localhost/$SCRIPT_DIR/ edu.duke.raft.StartServer 1098 "$id" "$LOG_DIR" "$CONFIG_DIR" >> $OUTPUT_FILE &
     PID="$!"
@@ -78,7 +79,7 @@ while [ $(( $(date +%s) - $TIME_TO_SIMULATE )) -lt $START ]; do
 	let "id += 1"
 
 	echo "Failing S$id"
-	kill -9 ${SERVER_PIDS[$id]} 2> /dev/null
+	kill -9 ${SERVER_PIDS[$id]}
 	SERVER_PIDS[$id]=""
     done
 
@@ -100,5 +101,5 @@ echo "Shutting down simulation"
 for (( id=1; id<=$NUM_SERVERS; id++ ))
 do
     echo "Shutting down server S$id"
-    kill -9 ${SERVER_PIDS[$id]} 2> /dev/null
+    kill -9 ${SERVER_PIDS[$id]}
 done
