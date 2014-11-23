@@ -26,7 +26,7 @@ public abstract class RaftMode {
 
   // election timeout values
   protected final static int ELECTION_TIMEOUT_MIN = 150;
-  protected final static int ELECTION_TIMEOUT_MAX = 300;
+  protected final static int ELECTION_TIMEOUT_MAX = 600;
   // heartbeat internval (half of min election timeout)
   protected final static int HEARTBEAT_INTERVAL = 75;
 
@@ -48,7 +48,7 @@ public abstract class RaftMode {
 			mID + 
 			"." + 
 			mConfig.getCurrentTerm () + 
-			":  Log " + 
+			": Log " + 
 			mLog);
   } 
 
@@ -73,6 +73,21 @@ public abstract class RaftMode {
   private final String getRmiUrl (int serverID) {
     return "rmi://localhost:" + mRmiPort + "/S" + serverID;
   }
+
+  private void printFailedRPC (int src, 
+			       int dst, 
+			       int term, 
+			       String rpc) {
+    System.out.println ("S" + 
+			src + 
+			"." +
+			term + 
+			": " + rpc +
+			" for S" + 
+			dst + 
+			" failed.");
+  }
+  
   
   // called to make request vote RPC on another server
   // results will be stored in RaftResponses
@@ -96,11 +111,20 @@ public abstract class RaftMode {
 				   candidateTerm);
 	  }
 	} catch (MalformedURLException me) {
-	  System.out.println (me.getMessage());
+	  printFailedRPC (candidateID, 
+			  serverID, 
+			  candidateTerm, 
+			  "requestVote");
 	} catch (RemoteException re) {
-	  System.out.println (re.getMessage());
+	  printFailedRPC (candidateID, 
+			  serverID, 
+			  candidateTerm, 
+			  "requestVote");
 	} catch (NotBoundException nbe) {
-	  System.out.println (nbe.getMessage());
+	  printFailedRPC (candidateID, 
+			  serverID, 
+			  candidateTerm, 
+			  "requestVote");
 	}
       }
     }.start ();
@@ -131,11 +155,20 @@ public abstract class RaftMode {
 					     leaderTerm);
 	  }
 	} catch (MalformedURLException me) {
-	  System.out.println (me.getMessage());
+	  printFailedRPC (leaderID, 
+			  serverID, 
+			  leaderTerm, 
+			  "appendEntries");
 	} catch (RemoteException re) {
-	  System.out.println (re.getMessage());
+	  printFailedRPC (leaderID, 
+			  serverID, 
+			  leaderTerm, 
+			  "appendEntries");
 	} catch (NotBoundException nbe) {
-	  System.out.println (nbe.getMessage());
+	  printFailedRPC (leaderID, 
+			  serverID, 
+			  leaderTerm, 
+			  "appendEntries");
 	}
       }
     }.start ();

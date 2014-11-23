@@ -32,9 +32,6 @@ public class RaftServerImpl extends UnicastRemoteObject
 			  int lastLogIndex,
 			  int lastLogTerm) 
     throws RemoteException {
-    System.out.println ("[S" + 
-			mID + 
-			"] Received requestVote request.");
     return mMode.requestVote (candidateTerm, 
 			      candidateID, 
 			      lastLogIndex,
@@ -50,9 +47,6 @@ public class RaftServerImpl extends UnicastRemoteObject
 			    Entry[] entries,
 			    int leaderCommit) 
     throws RemoteException  {
-    System.out.println ("[S" +
-			mID +
-			"] Received appendEntries request.");
     return mMode.appendEntries (leaderTerm,
 				leaderID,
 				prevLogIndex,

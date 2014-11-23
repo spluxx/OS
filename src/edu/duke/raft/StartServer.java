@@ -22,6 +22,7 @@ public class StartServer {
     RaftConfig config = new RaftConfig (configPath);
     RaftLog log = new RaftLog (logPath);
     int lastApplied = log.getLastIndex ();
+    RaftResponses.init (config.getNumServers (), log.getLastTerm ());
 
     try {
       RaftMode.initializeServer (config,

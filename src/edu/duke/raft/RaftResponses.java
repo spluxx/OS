@@ -20,7 +20,7 @@ public class RaftResponses {
   // @param current term
   public static void init (int size, int term) {
     mTerm = term;
-    mVotes = new int[size];
+    mVotes = new int[size + 1];
     clearVotes (term);
     mAppendResponses = new int[size];    
     clearAppendResponses (term);
