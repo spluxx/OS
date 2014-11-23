@@ -16,13 +16,11 @@ public class StartServer {
     String configPath = args[3] + "/" + id + ".config";
     
     String url = "rmi://localhost:" + port + "/S" + id;
-    System.out.println ("Starting S" + id);
-    System.out.println ("Binding server on rmiregistry " + url);
+//    System.out.println ("Starting S" + id);
+//    System.out.println ("Binding server on rmiregistry " + url);
 
     RaftConfig config = new RaftConfig (configPath);
     RaftLog log = new RaftLog (logPath);
-    System.exit(1);
-    
     int lastApplied = log.getLastIndex ();
 
     try {

@@ -43,6 +43,13 @@ public abstract class RaftMode {
     mLock = new Object ();
     mRmiPort = rmiPort;
     mID = id;
+
+    System.out.println ("S" + 
+			mID + 
+			"." + 
+			mConfig.getCurrentTerm () + 
+			":  Log " + 
+			mLog);
   } 
 
   // @param milliseconds for the timer to wait
