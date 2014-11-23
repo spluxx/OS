@@ -24,6 +24,12 @@ public abstract class RaftMode {
   // numeric id of this server
   protected static int mID;
 
+  // election timeout values
+  protected final static int ELECTION_TIMEOUT_MIN = 150;
+  protected final static int ELECTION_TIMEOUT_MAX = 300;
+  // heartbeat internval (half of min election timeout)
+  protected final static int HEARTBEAT_INTERVAL = 75;
+
   // initializes the server's mode
   public static void initializeServer (RaftConfig config,
 				       RaftLog log,
