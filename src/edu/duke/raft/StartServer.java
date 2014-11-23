@@ -34,11 +34,14 @@ public class StartServer {
       
       Naming.rebind(url, server);
     } catch (MalformedURLException me) {
-      System.out.println ("S" + id + me.getMessage());
+      System.out.println ("S" + id + ": " + me.getMessage());
+      me.printStackTrace ();
     } catch (RemoteException re) {
-      System.out.println ("S" + id + re.getMessage());
+      System.out.println ("S" + id +  ": " + re.getMessage());
+      re.printStackTrace ();
     } catch (Exception e) {
-      System.out.println ("S" + id + e.getMessage());
+      System.out.println ("S" + id +  ": " +  e.getMessage());
+      e.printStackTrace ();
     }
   }  
 }
