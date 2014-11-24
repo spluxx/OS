@@ -4,4 +4,6 @@ javac -d ../../../../bin  -classpath ../../../../bin:../../../ *.java
 
 An example simulation run from from the directory raft/src/edu/duke/raft:
 
-../../../../bin/startservers.sh 21 1098 2 5 1 15 2> /dev/null
+../../../../bin/startservers.sh 5 1098 1 5 5 60 2> /dev/null
+
+
