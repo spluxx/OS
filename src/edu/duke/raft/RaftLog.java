@@ -60,7 +60,7 @@ public class RaftLog {
 	    out.write ('\n');
 	    mEntries.add (entry);
 	  } else {
-	    System.out.println ("Tried to append null entry to RaftLog.");
+//	    System.out.println ("Tried to append null entry to RaftLog.");
 	    break;
 	  }	
 	}
