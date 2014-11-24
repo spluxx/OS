@@ -22,7 +22,7 @@ public class RaftResponses {
     mTerm = term;
     mVotes = new int[size + 1];
     clearVotes (term);
-    mAppendResponses = new int[size];    
+    mAppendResponses = new int[size + 1];    
     clearAppendResponses (term);
   }  
 
