@@ -86,6 +86,9 @@ public class RaftLog {
       // middle
       if (prevIndex == (mEntries.size () - 1)) {
 	return append (entries);
+      } else if (entries == null) {
+	// can only append null to the end of the log
+	return -1;
       } else if ((prevIndex == -1) ||
 		 ((mEntries.get (prevIndex) != null) &&
 		  (mEntries.get (prevIndex).term == prevTerm))) {
@@ -138,7 +141,7 @@ public class RaftLog {
 	System.out.println (
 	  "RaftLog: " +
 	  "index and term mismatch, could not insert new log entries.");
-	return 0;
+	return -1;
       }	
     } catch (IOException e) {
       System.out.println (e.getMessage ());
