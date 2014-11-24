@@ -79,7 +79,7 @@ public class RaftLog {
   // @return highest index in log after entries have been appended, if
   // the entry at prevIndex is not from prevTerm or if the log does
   // not have an entry at prevIndex, the append request will fail, and
-  // the method will return 0.
+  // the method will return -1.
   public int insert (Entry[] entries, int prevIndex, int prevTerm) {
     try {
       // Just append to the existing log if we aren't inserting in the
