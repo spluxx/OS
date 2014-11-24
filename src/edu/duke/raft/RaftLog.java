@@ -49,21 +49,23 @@ public class RaftLog {
   // 0 if the append failed.
   public int append (Entry[] entries) {
     try {
-      OutputStream out = Files.newOutputStream (mLogPath, 
-						StandardOpenOption.CREATE,
-						StandardOpenOption.APPEND,
-						StandardOpenOption.SYNC);
-      for (Entry entry : entries) {
-	if (entry != null) {
-	  out.write (entry.toString ().getBytes ());
-	  out.write ('\n');
-	  mEntries.add (entry);
-	} else {
-	  System.out.println ("Tried to append null entry to RaftLog.");
-	  break;
-	}	
+      if (entries != null) {
+	OutputStream out = Files.newOutputStream (mLogPath, 
+						  StandardOpenOption.CREATE,
+						  StandardOpenOption.APPEND,
+						  StandardOpenOption.SYNC);
+	for (Entry entry : entries) {
+	  if (entry != null) {
+	    out.write (entry.toString ().getBytes ());
+	    out.write ('\n');
+	    mEntries.add (entry);
+	  } else {
+	    System.out.println ("Tried to append null entry to RaftLog.");
+	    break;
+	  }	
+	}
+	out.close ();
       }
-      out.close ();
     } catch (IOException e) {
       System.out.println (e.getMessage ());
       e.printStackTrace();
