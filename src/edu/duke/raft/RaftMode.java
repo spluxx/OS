@@ -26,7 +26,7 @@ public abstract class RaftMode {
 
   // election timeout values
   protected final static int ELECTION_TIMEOUT_MIN = 150;
-  protected final static int ELECTION_TIMEOUT_MAX = 600;
+  protected final static int ELECTION_TIMEOUT_MAX = 300;
   // heartbeat internval (half of min election timeout)
   protected final static int HEARTBEAT_INTERVAL = 75;
 

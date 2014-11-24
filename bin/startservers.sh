@@ -43,7 +43,8 @@ echo "Restarting rmiregistry"
 
 RMI_PID=`$SCRIPT_DIR/pidof rmiregistry`
 
-if [ -n "$RMI_PID" ]; then
+if [ -n "$RMI_PID" ] 
+then
     echo "Killing old rmiregistry ($RMI_PID)"
     kill -9 "$RMI_PID"
 fi
@@ -68,15 +69,20 @@ do
 done
 
 START=`date +%s`
-while [ $(( $(date +%s) - $TIME_TO_SIMULATE )) -lt $START ]; do
+while [ $(( $(date +%s) - $TIME_TO_SIMULATE )) -lt $START ] 
+do
     echo "Going to sleep"
     sleep $TIME_TO_FAIL
 
     for (( failures=0; failures<$NUM_TO_FAIL; failures++ ))
     do
-	id=$RANDOM
-	let "id %= $NUM_SERVERS"
-	let "id += 1"
+	let "id = 0"
+	while [ -z  "${SERVER_PIDS[$id]}" ]
+	do
+	    id=$RANDOM
+	    let "id %= $NUM_SERVERS"
+	    let "id += 1"
+	done
 
 	echo "Failing S$id"
 	kill -9 ${SERVER_PIDS[$id]}
@@ -87,7 +93,8 @@ while [ $(( $(date +%s) - $TIME_TO_SIMULATE )) -lt $START ]; do
 
     for (( id=1; id<=$NUM_SERVERS; id++ ))
     do
-	if [ -z "${SERVER_PIDS[$id]}" ]; then
+	if [ -z "${SERVER_PIDS[$id]}" ] 
+	then
 	    java -classpath "$SCRIPT_DIR" -Djava.rmi.server.codebase=file://localhost/$SCRIPT_DIR/ edu.duke.raft.StartServer 1098 "$id" "$LOG_DIR" "$CONFIG_DIR"  >> $OUTPUT_FILE &
 	    PID="$!"
 	    SERVER_PIDS[$id]="$PID"
