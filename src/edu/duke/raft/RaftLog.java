@@ -68,7 +68,7 @@ public class RaftLog {
       System.out.println (e.getMessage ());
       e.printStackTrace();
     } 
-    return mEntries.size ();
+    return (mEntries.size () - 1);
   }
 
   // @param entries to append (in order of 0 to append.length-1)
@@ -148,7 +148,7 @@ public class RaftLog {
 
   // @return index of last entry in log
   public int getLastIndex () {
-    return mEntries.size ();
+    return (mEntries.size () - 1);
   }
 
   // @return term of last entry in log
@@ -162,7 +162,7 @@ public class RaftLog {
 
   // @return entry at passed-in index, null if none
   public Entry getEntry (int index) {
-    if ((index > -1) && (index < mEntries.size())) {
+    if ((index > -1) && (index <= mEntries.size())) {
       return new Entry (mEntries.get (index));
     }
     
@@ -190,9 +190,9 @@ public class RaftLog {
     RaftLog log = new RaftLog (filename);
     System.out.println ("Initial RaftLog: " + log);
 
-    System.out.println("Appending new entry (0 0).");
     Entry[] entries = new Entry[1];
     entries[0] = new Entry (0, 0);
+    System.out.println("Appending new entry " + entries[0] + ".");
     log.append (entries);
     System.out.println ("Resulting RaftLog: " + log);
 
@@ -204,8 +204,10 @@ public class RaftLog {
     log.insert (entries, 0, firstEntry.term);
     System.out.println ("Resulting RaftLog: " + log);
 
-    System.out.println("Inserting entry " + firstEntry + " at index 0.");
-    entries[0] = firstEntry;
+    newEntry.term = 5;
+    newEntry.action = 5;    
+    System.out.println("Inserting entry " + newEntry + " at index 0.");
+    entries[0] = newEntry;
     log.insert (entries, -1, -1);
     System.out.println ("Resulting RaftLog: " + log);
   }
