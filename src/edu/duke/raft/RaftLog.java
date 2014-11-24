@@ -125,9 +125,11 @@ public class RaftLog {
 
 	// Add the new entries
 	for (Entry entry : entries) {
-	  out.write (entry.toString ().getBytes ());
-	  out.write ('\n');
-	  tmpEntries.add (entry);
+	  if (entry != null) {
+	    out.write (entry.toString ().getBytes ());
+	    out.write ('\n');
+	    tmpEntries.add (entry);
+	  }
 	}
 	out.close ();
 
