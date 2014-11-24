@@ -162,7 +162,7 @@ public class RaftLog {
 
   // @return entry at passed-in index, null if none
   public Entry getEntry (int index) {
-    if ((index > -1) && (index <= mEntries.size())) {
+    if ((index > -1) && (index < mEntries.size())) {
       return new Entry (mEntries.get (index));
     }
     
