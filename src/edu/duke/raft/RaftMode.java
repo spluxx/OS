@@ -78,7 +78,7 @@ public abstract class RaftMode {
 			       int dst, 
 			       int term, 
 			       String rpc) {
-    System.out.println ("S" + 
+/*    System.out.println ("S" + 
 			src + 
 			"." +
 			term + 
@@ -86,6 +86,7 @@ public abstract class RaftMode {
 			" for S" + 
 			dst + 
 			" failed.");
+*/
   }
   
   
