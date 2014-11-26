@@ -59,7 +59,7 @@ public abstract class RaftMode {
   // handleTimeout method. If an event occurs before the timeout
   // period, then the mode should call the Timer's cancel method.
   protected final Timer scheduleTimer (long millis,
-				       int timerID) {
+				       final int timerID) {
     Timer timer = new Timer (false);
     TimerTask task = new TimerTask () {
 	public void run () {
@@ -92,11 +92,11 @@ public abstract class RaftMode {
   
   // called to make request vote RPC on another server
   // results will be stored in RaftResponses
-  protected final void remoteRequestVote (int serverID,
-					  int candidateTerm,
-					  int candidateID,
-					  int lastLogIndex,
-					  int lastLogTerm) {
+  protected final void remoteRequestVote (final int serverID,
+					  final int candidateTerm,
+					  final int candidateID,
+					  final int lastLogIndex,
+					  final int lastLogTerm) {
     new Thread () {
       public void run () {	
 	String url = getRmiUrl (serverID);
@@ -132,13 +132,13 @@ public abstract class RaftMode {
   }  
 
   // called to make request vote RPC on another server
-  protected final void remoteAppendEntries (int serverID,
-					    int leaderTerm,
-					    int leaderID,
-					    int prevLogIndex,
-					    int prevLogTerm,
-					    Entry[] entries,
-					    int leaderCommit) {
+  protected final void remoteAppendEntries (final int serverID,
+					    final int leaderTerm,
+					    final int leaderID,
+					    final int prevLogIndex,
+					    final int prevLogTerm,
+					    final Entry[] entries,
+					    final int leaderCommit) {
     new Thread () {
       public void run () {	
 	String url = getRmiUrl (serverID);
