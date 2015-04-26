@@ -73,7 +73,7 @@ public class RaftLog {
     } 
     return (mEntries.size () - 1);
   }
-
+  
   // @param entries to append (in order of 0 to append.length-1)
   // @param index of log entry before entries to append (-1 if
   // inserting at index 0)
@@ -109,19 +109,19 @@ public class RaftLog {
 	tmpLogPath = 
 	  FileSystems.getDefault ().
 	  getPath (mLogPath.toAbsolutePath ().toString () + ".tmp");
-	  
+	
 	OutputStream out = 
 	  Files.newOutputStream (tmpLogPath, 
 				 StandardOpenOption.CREATE,
 				 StandardOpenOption.TRUNCATE_EXISTING,
 				 StandardOpenOption.SYNC);
-
+	
 	// Write out the prefix
 	for (Entry entry : tmpEntries) {
 	  out.write (entry.toString ().getBytes ());
 	  out.write ('\n');
 	}
-
+	
 	// Add the new entries
 	for (Entry entry : entries) {
 	  if (entry != null) {
@@ -144,26 +144,26 @@ public class RaftLog {
 		    mLogPath, 
 		    StandardCopyOption.REPLACE_EXISTING,
 		    StandardCopyOption.ATOMIC_MOVE);
-	catch (IOException e) {
-	  System.out.println ("Error replacing old log.");
-	  System.out.println (e.getMessage ());
-	  e.printStackTrace();
-	  return -1;
-	}
-
-	// Switch the in-memory log to the new version
-	mEntries = tmpEntries;
-      } else {
-	System.out.println (
-	  "RaftLog: " +
-	  "index and term mismatch, could not insert new log entries.");
+      } catch (IOException e) {
+	System.out.println ("Error replacing old log.");
+	System.out.println (e.getMessage ());
+	e.printStackTrace();
 	return -1;
-      }	
-	
-      return (mEntries.size () - 1);
+      }
+      
+      // Switch the in-memory log to the new version
+      mEntries = tmpEntries;
+    } else {
+      System.out.println (
+	"RaftLog: " +
+	"index and term mismatch, could not insert new log entries.");
+      return -1;
     }
+    
+    return (mEntries.size () - 1);
+  }
 
-    // @return index of last entry in log
+  // @return index of last entry in log
     public int getLastIndex () {
       return (mEntries.size () - 1);
     }
