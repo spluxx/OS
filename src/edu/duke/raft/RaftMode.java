@@ -23,6 +23,8 @@ public abstract class RaftMode {
   protected static int mRmiPort;
   // numeric id of this server
   protected static int mID;
+  // when true, puts the server in testing mode
+  protected static boolean mIsTesting;
 
   // election timeout values
   protected final static int ELECTION_TIMEOUT_MIN = 150;
@@ -43,6 +45,7 @@ public abstract class RaftMode {
     mLock = new Object ();
     mRmiPort = rmiPort;
     mID = id;
+    mIsTesting = false;
 
     System.out.println ("S" + 
 			mID + 
@@ -51,6 +54,11 @@ public abstract class RaftMode {
 			": Log " + 
 			mLog);
   } 
+
+  // puts server into testing mode
+  public static void startTest () {
+    mIsTesting = true;
+  }  
 
   // @param milliseconds for the timer to wait
   // @param a way to identify the timer when handleTimeout is called
@@ -61,12 +69,18 @@ public abstract class RaftMode {
   protected final Timer scheduleTimer (long millis,
 				       final int timerID) {
     Timer timer = new Timer (false);
-    TimerTask task = new TimerTask () {
-	public void run () {
-	  RaftMode.this.handleTimeout (timerID);
-	}
-      };    
-    timer.schedule (task, millis);
+    
+    if (!mIsTesting) {
+      TimerTask task = new TimerTask () {
+	  public void run () {
+	    RaftMode.this.handleTimeout (timerID);
+	  }
+	};    
+      timer.schedule (task, millis);
+    } else {
+      // only fire this timer after receiving 
+    }
+    
     return timer;
   }
 
