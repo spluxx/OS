@@ -49,6 +49,7 @@ function restart_server {
 	java -classpath "$SCRIPT_DIR" -Djava.rmi.server.codebase="file://localhost/$SCRIPT_DIR/" edu.duke.raft.StartServer 1098 "$id" "$LOG_DIR" "$CONFIG_DIR" >> "$OUTPUT_FILE" &
 	PID="$!"
 	SERVER_PIDS[$id]="$PID"
+	echo "Started server S$id"
     fi
 }
 
@@ -66,22 +67,23 @@ function start_servers {
 	
 	echo "NUM_SERVERS=$NUM_SERVERS" >> "$CONFIG_DIR/$id.config"
 	restart_server $id
-	echo "Starting server S$id at $PID"
     done
-
 }
 
 function pause_server {
     kill -SIGSTOP ${SERVER_PIDS[$1]}
+    echo "Paused server S$1"
 }
 
 function resume_server {
     kill -SIGCONT ${SERVER_PIDS[$1]}
+    echo "Resumed server S$1"
 }
 
 function fail_server {
     kill -9 ${SERVER_PIDS[$1]}
     SERVER_PIDS[$1]=""
+    echo "Failed server S$1"
 }
 
 START=`date +%s`
