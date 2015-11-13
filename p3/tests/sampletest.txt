@@ -1,0 +1,18 @@
+# test parameters
+NUM_SERVERS=5
+
+# start test
+start_servers $NUM_SERVERS
+pause_server 1
+pause_server 2
+pause_server 3
+pause_server 4
+sleep 0.1                    # WAIT 100ms
+resume_server 1
+resume_server 2
+resume_server 3
+resume_server 4
+sleep 1                      # WAIT 1s
+fail_server 5
+sleep 1                      # WAIT 1s
+restart_server 5
