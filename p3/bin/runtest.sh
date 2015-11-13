@@ -71,7 +71,8 @@ function start_servers {
 }
 
 function pause_server {
-    kill -SIGSTOP ${SERVER_PIDS[$1]}
+#    kill -SIGSTOP ${SERVER_PIDS[$1]}
+    renice 20 ${SERVER_PIDS[$1]}
     echo "Paused server S$1"
 }
 
