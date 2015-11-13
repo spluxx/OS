@@ -4,6 +4,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface RaftServer extends Remote {
+
   // @param candidate’s term
   // @param candidate requesting vote
   // @param index of candidate’s last log entry

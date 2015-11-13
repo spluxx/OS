@@ -11,7 +11,7 @@ public class LeaderMode extends RaftMode {
 			  ": switched to leader mode.");
     }
   }
-
+  
   // @param candidate’s term
   // @param candidate requesting vote
   // @param index of candidate’s last log entry

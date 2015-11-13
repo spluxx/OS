@@ -1,9 +1,18 @@
-To compile from the directory raft/src/edu/duke/raft:
+To compile:
 
-javac -d ../../../../bin  -classpath ../../../../bin:../../../ *.java 
+$> cd p3
+$> make
 
 An example simulation run from from the directory raft/src/edu/duke/raft:
 
 ../../../../bin/startservers.sh 5 1098 1 5 5 60 2> /dev/null
 
 
+Test case:
+
+* define the number of servers
+* start server(s)
+* fail server(s) (kill -9 PID)
+* pause server(s) (kill -SIGSTOP PID)
+* unpause server(s) (kill -SIGCONT PID)
+* 

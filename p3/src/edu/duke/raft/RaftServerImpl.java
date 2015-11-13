@@ -20,7 +20,7 @@ public class RaftServerImpl extends UnicastRemoteObject
     mMode = mode;
     mode.go ();    
   }
-
+  
   // @param candidate’s term
   // @param candidate requesting vote
   // @param index of candidate’s last log entry
