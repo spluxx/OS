@@ -85,12 +85,15 @@ function fail_server {
 
 START=`date +%s`
 # load the test script
-source "$SCRIPT_DIR/../tests/$TEST_FILE"
-
-while [ $(( $(date +%s) - $TIME_TO_SIMULATE )) -lt $START ] 
-do
-    sleep 5
-done
+if [ -e "$SCRIPT_DIR/../$TEST_FILE" ]; then
+    source "$SCRIPT_DIR/../$TEST_FILE"
+    while [ $(( $(date +%s) - $TIME_TO_SIMULATE )) -lt $START ] 
+    do
+	sleep 5
+    done
+else
+    echo "Could not find test file $SCRIPT_DIR/../$TEST_FILE"
+fi
 
 echo "Shutting down simulation"
 
