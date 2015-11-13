@@ -84,10 +84,12 @@ function fail_server {
 }
 
 START=`date +%s`
+# load the test script
+source "$SCRIPT_DIR/../tests/$TEST_FILE"
+
 while [ $(( $(date +%s) - $TIME_TO_SIMULATE )) -lt $START ] 
 do
-    # load the test script
-    source $SCRIPT_DIR/../tests/$TEST_FILE
+    sleep 5
 done
 
 echo "Shutting down simulation"
