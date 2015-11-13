@@ -77,7 +77,8 @@ function pause_server {
 }
 
 function resume_server {
-    kill -SIGCONT ${SERVER_PIDS[$1]}
+#    kill -SIGCONT ${SERVER_PIDS[$1]}
+    renice 0 ${SERVER_PIDS[$1]}
     echo "Resumed server S$1"
 }
 
