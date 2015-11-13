@@ -43,11 +43,12 @@ sleep 5
 declare -a SERVER_PIDS
 
 function restart_server {
+    id=$1
     if [ -z "${SERVER_PIDS[$id]}" ] 
     then
 	java -classpath "$SCRIPT_DIR" -Djava.rmi.server.codebase="file://localhost/$SCRIPT_DIR/" edu.duke.raft.StartServer 1098 "$id" "$LOG_DIR" "$CONFIG_DIR" >> "$OUTPUT_FILE" &
 	PID="$!"
-	SERVER_PIDS[$1]="$PID"
+	SERVER_PIDS[$id]="$PID"
     fi
 }
 

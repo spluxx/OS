@@ -5,30 +5,30 @@ NUM_SERVERS=5
 start_servers $NUM_SERVERS
 
 # pause the first four servers
-pause_server 0
 pause_server 1
 pause_server 2
 pause_server 3
+pause_server 4
 
 # wait 100ms 
 sleep 0.1
 
 # resume the first four servers
-resume_server 0
 resume_server 1
 resume_server 2
 resume_server 3
+resume_server 4
 
 # wait 1 second
 sleep 1
 
-# fail server 4
-fail_server 4
+# fail server 5
+fail_server 5
 
 # wait 1 second
 sleep 1
 
-# restart server 4
-restart_server 4
+# restart server 5
+restart_server 5
 
 # END TEST
