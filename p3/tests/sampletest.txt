@@ -1,34 +1,21 @@
 # You must set this variable to the number of servers in your test case
-NUM_SERVERS=5
+NUM_SERVERS=3
 
-# START TEST
+# Test assumes the following .config values for ELECTION_TIMEOUT_OVERRIDE: 
+# S1 (1200), S2 (600), S3 (300)
+
 start_servers $NUM_SERVERS
 
-# pause the first four servers
-pause_server 1
-pause_server 2
+# wait for S3 to become leader
+sleep 1
+
+# pause server 3
 pause_server 3
-pause_server 4
 
-# wait 100ms 
-sleep 0.1
+# wait for S2 become leader
+sleep 1
 
-# resume the first four servers
-resume_server 1
-resume_server 2
+# resume S3
 resume_server 3
-resume_server 4
-
-# wait 1 second
-sleep 1
-
-# fail server 5
-fail_server 5
-
-# wait 1 second
-sleep 1
-
-# restart server 5
-restart_server 5
 
 # END TEST
