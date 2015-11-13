@@ -3,6 +3,6 @@ To compile:
 $> cd p3
 $> make
 
-An example simulation run from from the directory raft/src/edu/duke/raft using tests/sampletest.txt:
+An example 10-second simulation run from from the directory raft/src/edu/duke/raft using tests/sampletest.txt:
 
-../../../../bin/testraft.sh 10 sampletest.txt 2> /dev/null
+../../../../bin/runtest.sh 10 sampletest.txt 2> /dev/null
