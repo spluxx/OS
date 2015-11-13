@@ -13,7 +13,7 @@ echo "Writing simulation output to $OUTPUT_FILE"
 
 TIME_TO_SIMULATE="$1"
 echo "Simulation will last $TIME_TO_SIMULATE seconds"
-echo "TIME_TO_SIMULATE=$TIME_TO_SIMULATE" >> $OUTPUT_FILE
+echo "TIME_TO_SIMULATE=$TIME_TO_SIMULATE" >> "$OUTPUT_FILE"
 
 TEST_FILE="$2"
 NUM_SERVERS=0
@@ -27,7 +27,7 @@ echo "Reading config file from $CONFIG_DIR"
 
 echo "Restarting rmiregistry"
 PIDOF="$SCRIPT_DIR/pidof"
-RMI_PID=`$PIDOF rmiregistry`
+RMI_PID=`"$PIDOF" rmiregistry`
 
 if [ -n "$RMI_PID" ] 
 then
@@ -45,7 +45,7 @@ declare -a SERVER_PIDS
 function restart_server {
     if [ -z "${SERVER_PIDS[$id]}" ] 
     then
-	java -classpath "$SCRIPT_DIR" -Djava.rmi.server.codebase=file://localhost/$SCRIPT_DIR/ edu.duke.raft.StartServer 1098 "$id" "$LOG_DIR" "$CONFIG_DIR" >> $OUTPUT_FILE &
+	java -classpath "$SCRIPT_DIR" -Djava.rmi.server.codebase="file://localhost/$SCRIPT_DIR/" edu.duke.raft.StartServer 1098 "$id" "$LOG_DIR" "$CONFIG_DIR" >> "$OUTPUT_FILE" &
 	PID="$!"
 	SERVER_PIDS[$1]="$PID"
     fi
@@ -71,15 +71,15 @@ function start_servers {
 }
 
 function pause_server {
-    kill -SIGSTOP SERVER_PIDS[$1]
+    kill -SIGSTOP ${SERVER_PIDS[$1]}
 }
 
 function resume_server {
-    kill -SIGCONT SERVER_PIDS[$1]
+    kill -SIGCONT ${SERVER_PIDS[$1]}
 }
 
 function fail_server {
-    kill -9 SERVER_PIDS[$1]
+    kill -9 ${SERVER_PIDS[$1]}
     SERVER_PIDS[$1]=""
 }
 
