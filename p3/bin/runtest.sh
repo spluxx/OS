@@ -26,8 +26,8 @@ CONFIG_DIR="$SCRIPT_DIR/../serverlogs"
 echo "Reading config file from $CONFIG_DIR"
 
 echo "Restarting rmiregistry"
-
-RMI_PID=`$SCRIPT_DIR/pidof rmiregistry`
+PIDOF="$SCRIPT_DIR/pidof"
+RMI_PID=`$PIDOF rmiregistry`
 
 if [ -n "$RMI_PID" ] 
 then
