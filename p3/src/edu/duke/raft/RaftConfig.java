@@ -14,16 +14,19 @@ public class RaftConfig {
   private int mCurrentTerm=0;
   private int mVotedFor=0;
   private int mNumServers=0;
+  private int mTimeoutOverride=0;
   private Path mConfigPath=null;
   
   final private String CURRENT_TERM = "CURRENT_TERM";
   final private String VOTED_FOR = "VOTED_FOR";
   final private String NUM_SERVERS = "NUM_SERVERS";
+  final private String ELECTION_TIMEOUT_OVERRIDE = "ELECTION_TIMEOUT_OVERRIDE";
 
   // @param file where config log is stored
   public RaftConfig (String file) {
 
     try {
+      mTimeoutOverride = -1;
       mConfigPath = FileSystems.getDefault().getPath (file);
       String delims = "=";
       List<String> lines = Files.readAllLines (mConfigPath, 
@@ -40,6 +43,8 @@ public class RaftConfig {
 	    mVotedFor = Integer.parseInt (value);
 	  } else if (field.equals (NUM_SERVERS)) {
 	    mNumServers = Integer.parseInt (value);
+	  } else if (field.equals (ELECTION_TIMEOUT_OVERRIDE)) {
+	    mTimeoutOverride = Integer.parseInt (value);
 	  } else {
 	  System.out.println ("Error parsing " + 
 			      file + 
@@ -106,6 +111,11 @@ public class RaftConfig {
   // @return the number of server
   public int getNumServers () {
     return mNumServers;
+  }
+
+  // @return the election timeout override (-1 if use default values)
+  public int getTimeoutOverride () {
+    return mTimeoutOverride;
   }
 
   public String toString () {
