@@ -9,7 +9,7 @@ start_servers $NUM_SERVERS
 # wait for S3 to become leader
 sleep 1
 
-# pause server 3
+# pause S3
 pause_server 3
 
 # wait for S2 become leader
@@ -17,5 +17,17 @@ sleep 1
 
 # resume S3
 resume_server 3
+
+# wait for S3 to catch up
+sleep 1
+
+# fail S2
+fail_server 2
+
+# wait for a new leader to be elected
+sleep 1
+
+# recover S2
+restart_server 2
 
 # END TEST
