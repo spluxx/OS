@@ -17,8 +17,15 @@ public class RaftServerImpl extends UnicastRemoteObject
 
   // @param the server's current mode
   public static void setMode (RaftMode mode) {
-    mMode = mode;
-    mode.go ();    
+    if (mode == null) {
+      return;
+    }
+    // only change to a new mode
+    if ((mMode == null) || 
+        (mMode.getClass () != mode.getClass ())) {
+      mMode = mode;
+      mode.go ();    
+    }
   }
   
   // @param candidate’s term
