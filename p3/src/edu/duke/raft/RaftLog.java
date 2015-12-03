@@ -74,7 +74,8 @@ public class RaftLog {
     return (mEntries.size () - 1);
   }
   
-  // @param entries to append (in order of 0 to append.length-1)
+  // @param entries to append (in order of 0 to append.length-1). must
+  // be non-null.
   // @param index of log entry before entries to append (-1 if
   // inserting at index 0)
   // @param term of log entry before entries to append (ignored if
@@ -85,10 +86,11 @@ public class RaftLog {
   // the method will return -1.
   public int insert (Entry[] entries, int prevIndex, int prevTerm) {
     if (entries == null) {
-      // can only append null to the end of the log
+      // cannot insert null entries
       return -1;
     } else if ((prevIndex == -1) ||
-	       ((mEntries.get (prevIndex) != null) &&
+	       ((mEntries.size () > prevIndex) &&
+		(mEntries.get (prevIndex) != null) &&
 		(mEntries.get (prevIndex).term == prevTerm))) {
       // Because we are inserting in the middle of our log, we
       // will update our log by creating a temporary on-disk log
