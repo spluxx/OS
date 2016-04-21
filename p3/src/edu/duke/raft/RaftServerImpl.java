@@ -9,6 +9,7 @@ public class RaftServerImpl extends UnicastRemoteObject
 
   private static int mID;
   private static RaftMode mMode;
+  private static Object mLock;
   
   // @param server's unique id
   public RaftServerImpl (int serverID) throws RemoteException {
@@ -17,14 +18,16 @@ public class RaftServerImpl extends UnicastRemoteObject
 
   // @param the server's current mode
   public static void setMode (RaftMode mode) {
-    if (mode == null) {
-      return;
-    }
-    // only change to a new mode
-    if ((mMode == null) || 
-        (mMode.getClass () != mode.getClass ())) {
-      mMode = mode;
-      mode.go ();    
+    synchronized (mLock) { 
+      if (mode == null) {
+	return;
+      }
+      // only change to a new mode
+      if ((mMode == null) || 
+	  (mMode.getClass () != mode.getClass ())) {
+	mMode = mode;
+	mode.go ();    
+      }
     }
   }
   
@@ -39,10 +42,12 @@ public class RaftServerImpl extends UnicastRemoteObject
 			  int lastLogIndex,
 			  int lastLogTerm) 
     throws RemoteException {
-    return mMode.requestVote (candidateTerm, 
-			      candidateID, 
-			      lastLogIndex,
-			      lastLogTerm);
+    synchronized (mLock) { 
+      return mMode.requestVote (candidateTerm, 
+				candidateID, 
+				lastLogIndex,
+				lastLogTerm);
+    }
   }
 
   // @return 0, if server appended entries; otherwise, server's
@@ -54,12 +59,18 @@ public class RaftServerImpl extends UnicastRemoteObject
 			    Entry[] entries,
 			    int leaderCommit) 
     throws RemoteException  {
-    return mMode.appendEntries (leaderTerm,
-				leaderID,
-				prevLogIndex,
-				prevLogTerm,
-				entries,
-				leaderCommit);
+    synchronized (mLock) { 
+      return mMode.appendEntries (leaderTerm,
+				  leaderID,
+				  prevLogIndex,
+				  prevLogTerm,
+				  entries,
+				  leaderCommit);
+    }
+  }
+
+  static {
+    mLock = new Object();
   }
 }
 
