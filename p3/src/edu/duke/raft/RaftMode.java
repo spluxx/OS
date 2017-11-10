@@ -97,46 +97,90 @@ public abstract class RaftMode {
 					  final int candidateID,
 					  final int lastLogIndex,
 					  final int lastLogTerm) {
-    new Thread () {
-      public void run () {	
-	String url = getRmiUrl (serverID);
-	try {
-	  RaftServer server = (RaftServer) Naming.lookup(url);
-	  int response = server.requestVote (candidateTerm,
-					     candidateID,
-					     lastLogIndex,
-					     lastLogTerm);
-	  synchronized (RaftMode.mLock) {
-	    if (!RaftResponses.setVote (serverID, 
-					response, 
-					candidateTerm)) {
-	      System.err.println ("RaftResponses.setVote(" + 
-				  "serverID " + serverID + ", " + 
-				  "response " + response + ", " + 
-				  "candidateTerm " + candidateTerm + 
-				  ") failed.");
-	    }
-	  }
-	} catch (MalformedURLException me) {
-	  printFailedRPC (candidateID, 
-			  serverID, 
-			  candidateTerm, 
-			  "requestVote");
-	} catch (RemoteException re) {
-	  printFailedRPC (candidateID, 
-			  serverID, 
-			  candidateTerm, 
-			  "requestVote");
-	} catch (NotBoundException nbe) {
-	  printFailedRPC (candidateID, 
-			  serverID, 
-			  candidateTerm, 
-			  "requestVote");
-	}
-      }
-    }.start ();
-  }  
+    final int round; // the round under which this request will be made
+    int[] rounds = null;
 
+    synchronized (RaftMode.mLock) {
+      if ((rounds = RaftResponses.getRounds (candidateTerm)) != null) {
+	// we will check the latest round when we receive a response
+	round = (rounds[serverID]) + 1;
+	// update the round for the server we are contacting
+	if (!RaftResponses.setRound (serverID, round, candidateTerm)) {
+	  System.err.println ("RaftResponses.setRound(" +
+			      "serverID " + serverID + 
+			      "round " + round + 
+			      "candidateTerm " + candidateTerm + 
+			      ") failed.");
+	  return;
+	}	
+      } else {
+	System.err.println ("RaftResponses.getRounds(" +
+			    "candidateTerm " + candidateTerm + 
+			    ") failed.");
+	return;
+      }
+    }
+    
+    (new Thread (new Runnable () {	
+	private int mRound = round;
+	public void run () {
+	  String url = getRmiUrl (serverID);
+	  int[] rounds = null;
+	  try {
+	    RaftServer server = (RaftServer) Naming.lookup(url);
+	    int response = server.requestVote (candidateTerm,
+					       candidateID,
+					       lastLogIndex,
+					       lastLogTerm);
+	    synchronized (RaftMode.mLock) {
+	      // make sure the current round matches our request,
+	      // otherwise drop response
+	      if ((rounds = RaftResponses.getRounds (candidateTerm)) != null) {
+		if (rounds[serverID] != mRound) {
+		  System.err.println ("Round mismatch for server " + serverID +
+				      ". Requested under round " + mRound + 
+				      ", but received response under round " +
+				      rounds[serverID] + ".");
+		  return;
+		}
+	      } else {
+		System.err.println ("RaftResponses.getRounds(" +
+				    "candidateTerm " + candidateTerm + 
+				    ") failed.");
+		return;
+	      }
+	      
+	      if (!RaftResponses.setVote (serverID, 
+					  response, 
+					  candidateTerm)) {
+		System.err.println ("RaftResponses.setVote(" + 
+				    "serverID " + serverID + ", " + 
+				    "response " + response + ", " + 
+				    "candidateTerm " + candidateTerm + 
+				    ") failed.");
+	      }
+	    }
+	  } catch (MalformedURLException me) {
+	    printFailedRPC (candidateID, 
+			    serverID, 
+			    candidateTerm, 
+			    "requestVote");
+	  } catch (RemoteException re) {
+	    printFailedRPC (candidateID, 
+			    serverID, 
+			    candidateTerm, 
+			    "requestVote");
+	  } catch (NotBoundException nbe) {
+	    printFailedRPC (candidateID, 
+			    serverID, 
+			    candidateTerm, 
+			    "requestVote");
+	  }
+	}
+      })).start();
+      
+  }
+  
   // called to make request vote RPC on another server
   protected final void remoteAppendEntries (final int serverID,
 					    final int leaderTerm,
@@ -145,46 +189,90 @@ public abstract class RaftMode {
 					    final int prevLogTerm,
 					    final Entry[] entries,
 					    final int leaderCommit) {
-    new Thread () {
-      public void run () {	
-	String url = getRmiUrl (serverID);
-	try {
-	  RaftServer server = (RaftServer) Naming.lookup(url);
-	  int response = server.appendEntries (leaderTerm,
-					       leaderID,
-					       prevLogIndex,
-					       prevLogTerm,
-					       entries,
-					       leaderCommit);
-	  synchronized (RaftMode.mLock) {
-	    if (!RaftResponses.setAppendResponse (serverID, 
-						  response, 
-						  leaderTerm)) {
-	      System.err.println ("RaftResponses.setAppendResponse(" + 
-				  "serverID " + serverID + ", " + 
-				  "response " + response + ", " + 
-				  "leaderTerm " + leaderTerm + 
-				  ") failed.");
-	    }
-	  }
-	} catch (MalformedURLException me) {
-	  printFailedRPC (leaderID, 
-			  serverID, 
-			  leaderTerm, 
-			  "appendEntries");
-	} catch (RemoteException re) {
-	  printFailedRPC (leaderID, 
-			  serverID, 
-			  leaderTerm, 
-			  "appendEntries");
-	} catch (NotBoundException nbe) {
-	  printFailedRPC (leaderID, 
-			  serverID, 
-			  leaderTerm, 
-			  "appendEntries");
-	}
+    final int round; // the round under which this request will be made
+    int[] rounds = null;
+
+    synchronized (RaftMode.mLock) {
+      if ((rounds = RaftResponses.getRounds (leaderTerm)) != null) {
+	// we will check the latest round when we receive a response
+	round = (rounds[serverID]) + 1;
+	// update the round for the server we are contacting
+	if (!RaftResponses.setRound (serverID, round, leaderTerm)) {
+	  System.err.println ("RaftResponses.setRound(" +
+			      "serverID " + serverID + 
+			      "round " + round + 
+			      "leaderTerm " + leaderTerm + 
+			      ") failed.");
+	  return;
+	}	
+      } else {
+	System.err.println ("RaftResponses.getRounds(" +
+			    "leaderTerm " + leaderTerm + 
+			    ") failed.");
+	return;
       }
-    }.start ();
+    }
+
+    new Thread (new Runnable () {
+	private int mRound = round; 
+	public void run () {	
+	  String url = getRmiUrl (serverID);
+	  int[] rounds = null;
+
+	  try {
+	    RaftServer server = (RaftServer) Naming.lookup(url);
+	    int response = server.appendEntries (leaderTerm,
+						 leaderID,
+						 prevLogIndex,
+						 prevLogTerm,
+						 entries,
+						 leaderCommit);
+	    synchronized (RaftMode.mLock) {
+	      // make sure the current round matches our request,
+	      // otherwise drop response
+	      if ((rounds = RaftResponses.getRounds (leaderTerm)) != null) {
+		if (rounds[serverID] != mRound) {
+		  System.err.println ("Round mismatch for server " + serverID +
+				      ". Requested under round " + mRound + 
+				      ", but received response under round " +
+				      rounds[serverID] + ".");
+		  return;
+		}
+	      } else {
+		System.err.println ("RaftResponses.getRounds(" +
+				    "leaderTerm " + leaderTerm + 
+				    ") failed.");
+		return;
+	      }
+
+	      if (!RaftResponses.setAppendResponse (serverID, 
+						    response, 
+						    leaderTerm)) {
+		System.err.println ("RaftResponses.setAppendResponse(" + 
+				    "serverID " + serverID + ", " + 
+				    "response " + response + ", " + 
+				    "leaderTerm " + leaderTerm + 
+				    ") failed.");
+	      }
+	    }
+	  } catch (MalformedURLException me) {
+	    printFailedRPC (leaderID, 
+			    serverID, 
+			    leaderTerm, 
+			    "appendEntries");
+	  } catch (RemoteException re) {
+	    printFailedRPC (leaderID, 
+			    serverID, 
+			    leaderTerm, 
+			    "appendEntries");
+	  } catch (NotBoundException nbe) {
+	    printFailedRPC (leaderID, 
+			    serverID, 
+			    leaderTerm, 
+			    "appendEntries");
+	  }
+	}
+      }).start ();
   }  
 
   // called to activate the mode

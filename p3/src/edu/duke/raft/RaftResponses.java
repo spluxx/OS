@@ -15,20 +15,17 @@ public class RaftResponses {
   private static int[] mAppendResponses;
   private static int mTerm;
   private static int[] mVotes;
+  private static int[] mRounds;
 
   // @param size of the network
   // @param current term
   public static void init (int size, int currentTerm) {
     mTerm = currentTerm;
     mVotes = new int[size + 1];
+    mRounds = new int[size + 1];
     clearVotes (currentTerm);
     mAppendResponses = new int[size + 1];    
     clearAppendResponses (currentTerm);
-  }  
-
-  // @param the current term
-  public static void setTerm (int currentTerm) {
-    mTerm = currentTerm;
   }
 
   // @param current term. 
@@ -101,6 +98,45 @@ public class RaftResponses {
 					   int requestTerm) {
     if (requestTerm == mTerm) {
       mAppendResponses[serverID] = response;
+      return true;      
+    } 
+    return false;
+  }
+
+  // @param current term. 
+  // @return null if the internal term not equal to the
+  // parameter. array of message rounds.
+  public static int[] getRounds (int currentTerm) {
+    if (currentTerm == mTerm) {
+      return mRounds;
+    }    
+    return null;
+  }
+
+  // @param the current term. method has no effect if the internal
+  // term is not equal to the parameter. 
+  // @return true if rounds were cleared, false if not
+  public static boolean clearRounds (int currentTerm) {
+    if (currentTerm == mTerm) {
+      for (int i=0; i<mRounds.length; i++) {
+	mRounds[i] = -1;
+      }
+      return true;
+    }
+    return false;
+  }  
+  
+  // @param server 
+  // @param latest round under which a request was sent to the server
+  // @param term under which the request was sent. method has no
+  // effect if the request term is not equal to current term or if the
+  // new round is less than the old round
+  // @return true if response was set, false if not
+  public static boolean setRound (int serverID, 
+				  int round, 
+				  int requestTerm) {
+    if ((requestTerm == mTerm) && (round <= mRounds[serverID])) {
+      mRounds[serverID] = round;
       return true;      
     } 
     return false;
