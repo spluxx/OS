@@ -107,9 +107,15 @@ public abstract class RaftMode {
 					     lastLogIndex,
 					     lastLogTerm);
 	  synchronized (RaftMode.mLock) {
-	    RaftResponses.setVote (serverID, 
-				   response, 
-				   candidateTerm);
+	    if (!RaftResponses.setVote (serverID, 
+					response, 
+					candidateTerm)) {
+	      System.err.println ("RaftResponses.setVote(" + 
+				  "serverID " + serverID + ", " + 
+				  "response " + response + ", " + 
+				  "candidateTerm " + candidateTerm + 
+				  ") failed.");
+	    }
 	  }
 	} catch (MalformedURLException me) {
 	  printFailedRPC (candidateID, 
@@ -151,9 +157,15 @@ public abstract class RaftMode {
 					       entries,
 					       leaderCommit);
 	  synchronized (RaftMode.mLock) {
-	    RaftResponses.setAppendResponse (serverID, 
-					     response, 
-					     leaderTerm);
+	    if (!RaftResponses.setAppendResponse (serverID, 
+						  response, 
+						  leaderTerm)) {
+	      System.err.println ("RaftResponses.setAppendResponse(" + 
+				  "serverID " + serverID + ", " + 
+				  "response " + response + ", " + 
+				  "leaderTerm " + leaderTerm + 
+				  ") failed.");
+	    }
 	  }
 	} catch (MalformedURLException me) {
 	  printFailedRPC (leaderID, 

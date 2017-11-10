@@ -18,24 +18,24 @@ public class RaftResponses {
 
   // @param size of the network
   // @param current term
-  public static void init (int size, int term) {
-    mTerm = term;
+  public static void init (int size, int currentTerm) {
+    mTerm = currentTerm;
     mVotes = new int[size + 1];
-    clearVotes (term);
+    clearVotes (currentTerm);
     mAppendResponses = new int[size + 1];    
-    clearAppendResponses (term);
+    clearAppendResponses (currentTerm);
   }  
 
   // @param the current term
-  public static void setTerm (int term) {
-    mTerm = term;
+  public static void setTerm (int currentTerm) {
+    mTerm = currentTerm;
   }
 
-  // @param term for the election. 
+  // @param current term. 
   // @return null if the internal term not equal to the
   // paramter. array of voting results otherwise.
-  public static int[] getVotes (int term) {
-    if (term == mTerm) {
+  public static int[] getVotes (int currentTerm) {
+    if (currentTerm == mTerm) {
       return mVotes;
     }
     return null;
@@ -44,8 +44,8 @@ public class RaftResponses {
   // @param term under which votes are being cleared. method has no
   // effect if the internal term is not equal to the paramter.
   // @return true if votes were cleared, false if not
-  public static boolean clearVotes (int term) {
-    if (term == mTerm) {
+  public static boolean clearVotes (int currentTerm) {
+    if (currentTerm == mTerm) {
       for (int i=0; i<mVotes.length; i++) {
 	mVotes[i] = -1;
       } 
@@ -54,34 +54,35 @@ public class RaftResponses {
     return false;
   }  
 
-  // @param server casting vote
-  // @param return value from RPC to server
-  // @param term for the election. method has no effect if the
-  // internal term is not equal to the paramter.
+  // @param server casting vote.
+  // @param return value from RPC to server (0 if server voted for
+  // candidate; otherwise, server's current term.
+  // @param term under which the vote was cast. method has no effect
+  // if it is not equal to the current term.
   // @return true if vote was set, false if not
-  public static boolean setVote (int serverID, int response, int term) {
-    if (term == mTerm) {
+  public static boolean setVote (int serverID, int response, int voteTerm) {
+    if (voteTerm == mTerm) {
       mVotes[serverID] = response;
       return true;
     }
     return false;
   }
   
-  // @param term for the election. 
+  // @param current term. 
   // @return null if the internal term not equal to the
   // paramter. array of append responses otherwise.
-  public static int[] getAppendResponses (int term) {
-    if (term == mTerm) {
+  public static int[] getAppendResponses (int currentTerm) {
+    if (currentTerm == mTerm) {
       return mAppendResponses;
     }    
     return null;
   }
 
-  // @param term under which responses are being cleared. method has
-  // no effect if the internal term is not equal to the paramter.
+  // @param the current term. method has no effect if the internal
+  // term is not equal to the paramter. 
   // @return true if responses were cleared, false if not
-  public static boolean clearAppendResponses (int term) {
-    if (term == mTerm) {
+  public static boolean clearAppendResponses (int currentTerm) {
+    if (currentTerm == mTerm) {
       for (int i=0; i<mAppendResponses.length; i++) {
 	mAppendResponses[i] = -1;
       }
@@ -90,15 +91,15 @@ public class RaftResponses {
     return false;
   }  
   
-  // @param server casting vote
+  // @param responding server
   // @param return value from RPC to server
-  // @param term for the election. method has no effect if the
-  // internal term is not equal to the paramter.
+  // @param term under which the request was sent. method has no
+  // effect if the request term is not equal to current term.
   // @return true if response was set, false if not
   public static boolean setAppendResponse (int serverID, 
 					   int response, 
-					   int term) {
-    if (term == mTerm) {
+					   int requestTerm) {
+    if (requestTerm == mTerm) {
       mAppendResponses[serverID] = response;
       return true;      
     } 

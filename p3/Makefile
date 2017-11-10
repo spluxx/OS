@@ -26,4 +26,4 @@ default: classes
 classes: $(CLASSES:.java=.class)
 
 clean:
-	$(RM) *.class
+	$(RM) ./bin/$(RAFT_PATH)/*.class
