@@ -20,12 +20,21 @@ public class RaftResponses {
   // @param size of the network
   // @param current term
   public static void init (int size, int currentTerm) {
-    mTerm = currentTerm;
     mVotes = new int[size + 1];
     mRounds = new int[size + 1];
-    clearVotes (currentTerm);
     mAppendResponses = new int[size + 1];    
+    setTerm (currentTerm);
+    clearVotes (currentTerm);
     clearAppendResponses (currentTerm);
+  }
+
+  // @param the current term
+  public static void setTerm (int currentTerm) {
+    mTerm = currentTerm;
+    // restart the round count
+    for (int i=0; i<mRounds.length; i++) {
+      mRounds[i] = -1;
+    }
   }
 
   // @param current term. 
@@ -112,19 +121,6 @@ public class RaftResponses {
     }    
     return null;
   }
-
-  // @param the current term. method has no effect if the internal
-  // term is not equal to the parameter. 
-  // @return true if rounds were cleared, false if not
-  public static boolean clearRounds (int currentTerm) {
-    if (currentTerm == mTerm) {
-      for (int i=0; i<mRounds.length; i++) {
-	mRounds[i] = -1;
-      }
-      return true;
-    }
-    return false;
-  }  
   
   // @param server 
   // @param latest round under which a request was sent to the server
