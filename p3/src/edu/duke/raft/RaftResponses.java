@@ -131,7 +131,7 @@ public class RaftResponses {
   public static boolean setRound (int serverID, 
 				  int round, 
 				  int requestTerm) {
-    if ((requestTerm == mTerm) && (round <= mRounds[serverID])) {
+    if ((requestTerm == mTerm) && (round > mRounds[serverID])) {
       mRounds[serverID] = round;
       return true;      
     } 
