@@ -65,9 +65,14 @@ public class RaftResponses {
   // candidate; otherwise, server's current term.
   // @param term under which the vote was cast. method has no effect
   // if it is not equal to the current term.
+  // @param round under which the vote was cast. method has no effect
+  // if it is not equal to the current round.
   // @return true if vote was set, false if not
-  public static boolean setVote (int serverID, int response, int voteTerm) {
-    if (voteTerm == mTerm) {
+  public static boolean setVote (int serverID, 
+				 int response, 
+				 int voteTerm,
+				 int voteRound) {
+    if ((voteTerm == mTerm) && (voteRound == mRounds[serverID])) {
       mVotes[serverID] = response;
       return true;
     }
@@ -101,11 +106,14 @@ public class RaftResponses {
   // @param return value from RPC to server
   // @param term under which the request was sent. method has no
   // effect if the request term is not equal to current term.
+  // @param round under which the request was sent. method has no
+  // effect if the request round is not equal to current round.
   // @return true if response was set, false if not
   public static boolean setAppendResponse (int serverID, 
 					   int response, 
-					   int requestTerm) {
-    if (requestTerm == mTerm) {
+					   int requestTerm,
+					   int requestRound) {
+    if ((requestTerm == mTerm) && (requestRound == mRounds[serverID])) {
       mAppendResponses[serverID] = response;
       return true;      
     } 

@@ -132,31 +132,16 @@ public abstract class RaftMode {
 					       candidateID,
 					       lastLogIndex,
 					       lastLogTerm);
-	    synchronized (RaftMode.mLock) {
-	      // make sure the current round matches our request,
-	      // otherwise drop response
-	      if ((rounds = RaftResponses.getRounds (candidateTerm)) != null) {
-		if (rounds[serverID] != mRound) {
-		  System.err.println ("Round mismatch for server " + serverID +
-				      ". Requested under round " + mRound + 
-				      ", but received response under round " +
-				      rounds[serverID] + ".");
-		  return;
-		}
-	      } else {
-		System.err.println ("RaftResponses.getRounds(" +
-				    "candidateTerm " + candidateTerm + 
-				    ") failed.");
-		return;
-	      }
-	      
+	    synchronized (RaftMode.mLock) {	      
 	      if (!RaftResponses.setVote (serverID, 
 					  response, 
-					  candidateTerm)) {
+					  candidateTerm,
+					  mRound)) {
 		System.err.println ("RaftResponses.setVote(" + 
 				    "serverID " + serverID + ", " + 
 				    "response " + response + ", " + 
-				    "candidateTerm " + candidateTerm + 
+				    "candidateTerm " + candidateTerm + ", " +
+				    "candidateRound " + mRound + 
 				    ") failed.");
 	      }
 	    }
@@ -228,30 +213,15 @@ public abstract class RaftMode {
 						 entries,
 						 leaderCommit);
 	    synchronized (RaftMode.mLock) {
-	      // make sure the current round matches our request,
-	      // otherwise drop response
-	      if ((rounds = RaftResponses.getRounds (leaderTerm)) != null) {
-		if (rounds[serverID] != mRound) {
-		  System.err.println ("Round mismatch for server " + serverID +
-				      ". Requested under round " + mRound + 
-				      ", but received response under round " +
-				      rounds[serverID] + ".");
-		  return;
-		}
-	      } else {
-		System.err.println ("RaftResponses.getRounds(" +
-				    "leaderTerm " + leaderTerm + 
-				    ") failed.");
-		return;
-	      }
-
 	      if (!RaftResponses.setAppendResponse (serverID, 
 						    response, 
-						    leaderTerm)) {
+						    leaderTerm,
+						    mRound)) {
 		System.err.println ("RaftResponses.setAppendResponse(" + 
 				    "serverID " + serverID + ", " + 
 				    "response " + response + ", " + 
-				    "leaderTerm " + leaderTerm + 
+				    "requestTerm " + leaderTerm + ", " +
+				    "requestRound " + mRound +
 				    ") failed.");
 	      }
 	    }
