@@ -33,7 +33,7 @@ void createNode(void* ptr, size_t size_, metadata_t* next_, metadata_t* prev_) {
   } else {
     metadata_t* ret = (metadata_t*) ptr; 
     ret -> size = size_;
-
+  
     ret -> next = next_;
     if(ret -> next != NULL) 
       ret -> next -> prev = ret;
@@ -67,10 +67,12 @@ void* dmalloc(size_t numbytes) {
   numbytes = ALIGN(numbytes);
 
   metadata_t* tmp = freelist;
-  DEBUG("DMALLOC %ld %ld\n", tmp->size, MAX_HEAP_SIZE);
-  while(tmp != NULL && (tmp->size > MAX_HEAP_SIZE ? true : tmp->size < numbytes)) tmp = tmp->next;
+  while(tmp != NULL && tmp->size < numbytes) tmp = tmp->next;
 
   if(tmp != NULL) {
+    size_t residue = tmp->size - numbytes - METADATA_T_ALIGNED;
+    if((long int)residue <= 0) numbytes += METADATA_T_ALIGNED + residue;
+
     createNode(
       (metadata_t*)((char*)tmp + numbytes + METADATA_T_ALIGNED), 
       tmp->size - numbytes - METADATA_T_ALIGNED,

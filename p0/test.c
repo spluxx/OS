@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 int main() {
-  size_t b = -24;
-  size_t c = -24;
-  printf("%d %d\n", a, b);
+  size_t b = 2;
+  size_t a = 1;
+  printf("%s\n", (a-b) < 0 ? "neg":"nonneg");
   return 0;
 }

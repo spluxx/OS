@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
  	 * the random values changes after each execution 
  	 */
 	if(PSEUDO_RANDOM_SEED) {
-	  SEED(1516675453);
+	  SEED(time(NULL));
 	}
 
 	assert(MAX_HEAP_SIZE >= 1024*1024 && "MAX_HEAP_SIZE is too low; Recommended setting is at least 1MB for test_stress2");
