@@ -25,22 +25,101 @@ typedef struct metadata {
 
 static metadata_t* freelist = NULL;
 
+void createNode(void* ptr, size_t size_, metadata_t* next_, metadata_t* prev_) {
+  if(size_ == -METADATA_T_ALIGNED) { // erase meaningless header
+    if(next_ != NULL) next_->prev=prev_; 
+    if(prev_ != NULL) prev_->next=next_;
+    else freelist = next_;
+  } else {
+    metadata_t* ret = (metadata_t*) ptr; 
+    ret -> size = size_;
+
+    ret -> next = next_;
+    if(ret -> next != NULL) 
+      ret -> next -> prev = ret;
+    
+    ret -> prev = prev_;
+    if(ret -> prev != NULL)
+      ret -> prev -> next = ret;
+    else freelist = ret;
+  }
+}
+
+void addNode(metadata_t* prev, metadata_t* that, metadata_t* next) {
+  if(prev != NULL) prev->next = that; 
+  else freelist = that;
+  that->prev = prev;
+  if(next != NULL) next->prev = that;
+  that->next = next;
+}
+
+
 void* dmalloc(size_t numbytes) {
   /* initialize through sbrk call first time */
   if(freelist == NULL) { 			
     if(!dmalloc_init())
       return NULL;
   }
-
   assert(numbytes > 0);
 
-  /* your code here */
-	
-  return NULL;
+  DEBUG("BEFORE DMALLOC %d\n", numbytes);
+  print_freelist();
+
+  numbytes = ALIGN(numbytes);
+
+  metadata_t* tmp = freelist;
+  while(tmp != NULL && (tmp->size > MAX_HEAP_SIZE ? true : tmp->size < numbytes)) tmp = tmp->next;
+
+  if(tmp != NULL) {
+    createNode(
+      (metadata_t*)((char*)tmp + numbytes + METADATA_T_ALIGNED), 
+      tmp->size - numbytes - METADATA_T_ALIGNED,
+      tmp->next, tmp->prev);
+    tmp->size = numbytes;
+    tmp = (metadata_t*)((char*)tmp + METADATA_T_ALIGNED);
+  }
+
+  DEBUG("AFTER DMALLOC\n");
+  print_freelist();
+
+  return (void*) tmp;
 }
 
 void dfree(void* ptr) {
-  /* your code here */
+  metadata_t* header = (metadata_t*)((char*) ptr - METADATA_T_ALIGNED);
+  metadata_t* tmpPrev = NULL;
+  metadata_t* tmp = freelist;
+
+  DEBUG("BEFORE DFREE %p\n", ptr);
+  print_freelist();
+  
+  if(header > tmp) {
+    while(tmp != NULL && header >= tmp) {
+      tmpPrev = tmp;
+      tmp = tmp->next;
+    }
+  }
+
+  addNode(tmpPrev, header, tmp);
+  DEBUG("ADD NODE\n");
+  print_freelist();
+
+  // coalesce right
+  if(tmp != NULL && (char*)header + METADATA_T_ALIGNED + header->size == (char*) tmp) {
+    header->size += tmp->size + METADATA_T_ALIGNED;
+    header->next = tmp->next;
+    if(tmp->next != NULL) tmp->next->prev = header;
+  }
+
+  // coalesce left
+  if(tmpPrev != NULL && (char*)header - METADATA_T_ALIGNED - tmpPrev->size == (char*) tmpPrev) {
+    tmpPrev->size += header->size + METADATA_T_ALIGNED;
+    tmpPrev->next = header->next;
+    if(header->next != NULL) header->next->prev = tmpPrev;
+  }
+
+  DEBUG("AFTER DFREE\n");
+  print_freelist();
 }
 
 bool dmalloc_init() {
