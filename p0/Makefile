@@ -2,7 +2,7 @@
 #CC = g++
 CC = gcc
 EXECUTABLES = basicdmmtest test_basic test_coalesce test_stress1 test_stress2 test_stress3
-CFLAGS = -I. -g3 -Wall -DNDEBUG
+CFLAGS = -I. -g3 -Wall # -DNDEBUG
 
 all: ${EXECUTABLES}
 

@@ -22,7 +22,7 @@
 #define MAX_ALLOC_SIZE (MAX_HEAP_SIZE/100)
 
 /* Set to 1 for non-deterministic seeding after each execution */
-#define PSEUDO_RANDOM_SEED	1
+#define PSEUDO_RANDOM_SEED    1
 
 #define ALLOC_CONST	0.5
 
@@ -48,8 +48,9 @@ int main(int argc, char *argv[]) {
 	/* Set the PSEUDO_RANDOM_SEED for pseduo random seed initialization based on time, i.e.,
  	 * the random values changes after each execution 
  	 */
-	if(PSEUDO_RANDOM_SEED)
-		SEED(time(NULL));
+	if(PSEUDO_RANDOM_SEED) {
+	  SEED(1516675453);
+	}
 
 	assert(MAX_HEAP_SIZE >= 1024*1024 && "MAX_HEAP_SIZE is too low; Recommended setting is at least 1MB for test_stress2");
 

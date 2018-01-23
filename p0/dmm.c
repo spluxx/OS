@@ -57,8 +57,7 @@ void addNode(metadata_t* prev, metadata_t* that, metadata_t* next) {
 void* dmalloc(size_t numbytes) {
   /* initialize through sbrk call first time */
   if(freelist == NULL) { 			
-    if(!dmalloc_init())
-      return NULL;
+    if(!dmalloc_init()) return false;
   }
   assert(numbytes > 0);
 
@@ -68,6 +67,7 @@ void* dmalloc(size_t numbytes) {
   numbytes = ALIGN(numbytes);
 
   metadata_t* tmp = freelist;
+  DEBUG("DMALLOC %ld %ld\n", tmp->size, MAX_HEAP_SIZE);
   while(tmp != NULL && (tmp->size > MAX_HEAP_SIZE ? true : tmp->size < numbytes)) tmp = tmp->next;
 
   if(tmp != NULL) {
