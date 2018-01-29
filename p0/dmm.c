@@ -45,16 +45,6 @@ bool check_init() {
   return true;
 }
 
-int find_freelist(size_t numbytes) {
-  int whichList = -1;
-  bool active = false;
-  for(int i = 0 ; i < MAX_SEGRAGATION ; i ++) {  
-    LL ub = (1UL << (i+1)) * ALIGNMENT - 1;
-    if(active && freelist[i] != NULL) { whichList = i; break; } // find min i that has free block for numbytes 
-    if(numbytes <= ub) active = true;
-  } return whichList;
-}
-
 int where_to_put(size_t numbytes) {
   int whichList = -1;
   for(int i = 0 ; i < MAX_SEGRAGATION ; i ++) {
@@ -88,13 +78,26 @@ void* dmalloc(size_t numbytes) {
   print_freelist();
    
   numbytes = ALIGN(numbytes);
-  numbytes = numbytes < METADATA_T_ALIGNED+WORD_SIZE ? METADATA_T_ALIGNED+WORD_SIZE : numbytes;
+  numbytes = numbytes < METADATA_T_ALIGNED ? METADATA_T_ALIGNED : numbytes;
 
-  int whichList = find_freelist(numbytes);
-  if(whichList == -1) return NULL; // if none is available... fail...
+  int whichList = -1;
+  bool found = false;
+  metadata_t* tmp = NULL;
+  for(int i = 0 ; i < MAX_SEGRAGATION && !found; i ++) {
+    LL ub = (1UL << (i+1)) * ALIGNMENT - 1;
+    if(numbytes <= ub && freelist[i] != NULL) { 
+      tmp = freelist[i];
+      while(tmp != NULL) {
+	if(numbytes <= GET_SIZE(tmp)) {
+	  whichList = i;
+	  found = true;
+	  break;
+	} tmp = tmp->next;
+      }
+    }
+  } if(!found) return NULL;
 
   void* ret = NULL;
-  metadata_t* tmp = freelist[whichList];
   size_t residue = GET_SIZE(tmp) - numbytes - 2*METADATA_T_ALIGNED;
   if((LL)residue > 0) { // split
     tmp->size = PACK(numbytes, GET_PREV_ALLOC(tmp), 0x1);     
@@ -105,8 +108,9 @@ void* dmalloc(size_t numbytes) {
     nextBlk->prev = nextFtr->prev = NULL;
     if(nextBlk->next != NULL) nextBlk->next->prev = nextBlk;
 
-    freelist[whichList] = freelist[whichList]->next;
-    if(freelist[whichList] != NULL) freelist[whichList]->prev = NULL;
+    if(tmp->prev == NULL) freelist[whichList] = freelist[whichList]->next;
+    else tmp->prev->next = tmp->next;
+    if(tmp->next != NULL) tmp->next->prev = tmp->prev;
 
     DEBUG("split %p %p\n", tmp, nextBlk);
     put_free_block(nextBlk);
@@ -116,15 +120,13 @@ void* dmalloc(size_t numbytes) {
     metadata_t* nextHeader = (metadata_t*) ((char*) tmp + GET_SIZE(tmp) + METADATA_T_ALIGNED);
     if(nextHeader < end_of_world) nextHeader->size |= 0x2;
 
-    freelist[whichList] = freelist[whichList]->next;
-    if(freelist[whichList] != NULL) freelist[whichList]->prev = NULL;
-
+    if(tmp->prev == NULL) freelist[whichList] = freelist[whichList]->next;
+    else tmp->prev->next = tmp->next;
     if(tmp->next != NULL) tmp->next->prev = tmp->prev;
+
     DEBUG("2 %p\n", tmp);
     ret = (void *) BP(tmp);
   }
-  ((metadata_t*) ret)->next = NULL;
-  ((metadata_t*) ret)->prev = NULL;
   
   DEBUG("AFTER MALLOC RETURNING %p\n", ret);
   print_freelist();
