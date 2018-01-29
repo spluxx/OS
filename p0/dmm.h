@@ -38,6 +38,7 @@ void dfree(void *allocptr);
 
 
 void print_freelist(); /* optional for debugging */
+void print_all(); /* optional for debugging */
 
 #endif /* end of __CPS310_MM_H__ */
 
