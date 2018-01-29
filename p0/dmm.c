@@ -16,148 +16,245 @@ typedef struct metadata {
    */
   size_t size;
   struct metadata* next;
-  struct metadata* prev; 
+  struct metadata* prev;
 } metadata_t;
 
+#define LL		    long long
+#define MAX_SEGRAGATION	    (8*WORD_SIZE)
+#define PACK(s, pa, a)	    ((s) | (pa) | (a))
+#define BP(mdp)		    ((char *)(mdp) + METADATA_T_ALIGNED)
+#define GET_SIZE(mdp)	    ((*((size_t *) mdp)) & ~(ALIGNMENT-1)) // get portion of size within a size_t
+#define GET_ALLOC(mdp)	    ((*((size_t *) mdp)) & 0x1)	// 0 if free // 1 if alloc
+#define GET_PREV_ALLOC(mdp) ((*((size_t *) mdp)) & 0x2)	// 0 if free // 2 if alloc
+#define HDRP(bp)	    ((char *)(bp) - METADATA_T_ALIGNED)
+#define FTRP(bp)	    ((char *)(bp) + GET_SIZE(HDRP(bp)) - METADATA_T_ALIGNED)
+
 /* freelist maintains all the blocks which are not in use; freelist is kept
- * sorted to improve coalescing efficiency 
- */
+ * sorted to improve coalescing efficiency */
 
-static metadata_t* freelist = NULL;
+static metadata_t* freelist[MAX_SEGRAGATION]; // freelist[i] -> blocks of size [2^i * ALIGNMENT, 2^(i+1) * ALIGNMENT)
+					      // freelist[-1] -> blocks of size [2^(MAX_SEGRAGATION-1) * ALIGNMENT, inf)
+static metadata_t* start_of_world = NULL; // initial
+static metadata_t* end_of_world; // brk
 
-void createNode(void* ptr, size_t size_, metadata_t* next_, metadata_t* prev_) {
-  if(size_ == -METADATA_T_ALIGNED) { // erase meaningless header
-    if(next_ != NULL) next_->prev=prev_; 
-    if(prev_ != NULL) prev_->next=next_;
-    else freelist = next_;
+bool check_init() {
+  bool flag = true;
+  for(int i = 0 ; i < MAX_SEGRAGATION ; i ++) {
+    if(freelist[i] != NULL) { flag = false; break; }
+  } if(flag) if(!dmalloc_init()) return false;
+  return true;
+}
+
+int find_freelist(size_t numbytes) {
+  int whichList = -1;
+  for(int i = 0 ; i < MAX_SEGRAGATION ; i ++) {  
+    LL ub = (1UL << (i+1)) * ALIGNMENT - 1;
+    if(numbytes <= ub && freelist[i] != NULL) { whichList = i; break; } // find min i that has free block for numbytes 
+  } return whichList;
+}
+
+int where_to_put(size_t numbytes) {
+  int whichList = -1;
+  for(int i = 0 ; i < MAX_SEGRAGATION ; i ++) {
+    LL ub = (1UL << (i+1)) * ALIGNMENT - 1;
+    if(numbytes <= ub) { whichList = i; break; } // find min i that has free block for numbytes 
+  } return whichList;
+}
+
+bool put_free_block(void* ptr) {
+  metadata_t* tmp = (metadata_t*) ptr;
+  int whichList = where_to_put(GET_SIZE(ptr));
+  if(whichList == -1) return false;
+
+  if(freelist[whichList] == NULL) {
+    freelist[whichList] = tmp;
+    tmp->next = tmp->prev = NULL;
   } else {
-    metadata_t* ret = (metadata_t*) ptr; 
-    ret -> size = size_;
-  
-    ret -> next = next_;
-    if(ret -> next != NULL) 
-      ret -> next -> prev = ret;
-    
-    ret -> prev = prev_;
-    if(ret -> prev != NULL)
-      ret -> prev -> next = ret;
-    else freelist = ret;
-  }
+    tmp->next = freelist[whichList];
+    tmp->prev = NULL;
+    freelist[whichList]->prev = tmp;
+    freelist[whichList] = tmp;
+  } return true;
 }
-
-void addNode(metadata_t* prev, metadata_t* that, metadata_t* next) {
-  if(prev != NULL) prev->next = that; 
-  else freelist = that;
-  that->prev = prev;
-  if(next != NULL) next->prev = that;
-  that->next = next;
-}
-
 
 void* dmalloc(size_t numbytes) {
-  /* initialize through sbrk call first time */
-  if(freelist == NULL) { 			
-    if(!dmalloc_init()) return false;
-  }
+  if(!check_init()) return NULL; // more memory only when it's not caused by bad fragmentation
+
   assert(numbytes > 0);
 
-  DEBUG("BEFORE DMALLOC %d\n", numbytes);
+  print_all();
   print_freelist();
-
+   
   numbytes = ALIGN(numbytes);
+  numbytes = numbytes < METADATA_T_ALIGNED+WORD_SIZE ? METADATA_T_ALIGNED+WORD_SIZE : numbytes;
 
-  metadata_t* tmp = freelist;
-  while(tmp != NULL && tmp->size < numbytes) tmp = tmp->next;
+  int whichList = find_freelist(numbytes);
+  if(whichList == -1) return NULL; // if none is available... fail...
 
-  if(tmp != NULL) {
-    size_t residue = tmp->size - numbytes - METADATA_T_ALIGNED;
-    if((long int)residue <= 0) numbytes += METADATA_T_ALIGNED + residue;
-
-    createNode(
-      (metadata_t*)((char*)tmp + numbytes + METADATA_T_ALIGNED), 
-      tmp->size - numbytes - METADATA_T_ALIGNED,
-      tmp->next, tmp->prev);
-    tmp->size = numbytes;
-    tmp = (metadata_t*)((char*)tmp + METADATA_T_ALIGNED);
+  void* ret = NULL;
+  metadata_t* tmp = freelist[whichList];
+  size_t residue = GET_SIZE(tmp) - numbytes - 2*METADATA_T_ALIGNED;
+  if((LL)residue > 0) { // split
+    tmp->size = PACK(numbytes, GET_PREV_ALLOC(tmp), 0x1);     
+    metadata_t* nextBlk = (metadata_t *)(BP(tmp) + GET_SIZE(tmp));
+    metadata_t* nextFtr = (metadata_t *)((char *) nextBlk + residue + METADATA_T_ALIGNED);
+    nextBlk->size = nextFtr->size = PACK(residue+METADATA_T_ALIGNED, 0x2, 0x0);
+    nextBlk->next = nextFtr->next = tmp->next;
+    nextBlk->prev = nextFtr->prev = NULL;
+    if(nextBlk->next != NULL) nextBlk->next->prev = nextBlk;
+    freelist[whichList] = freelist[whichList]->next;
+    if(freelist[whichList] != NULL) freelist[whichList]->prev = NULL;
+    put_free_block(nextBlk);
+    ret = (void *) BP(tmp);
+  } else { // just
+    tmp->size = PACK(GET_SIZE(tmp), GET_PREV_ALLOC(tmp), 0x1);
+    metadata_t* nextHeader = (metadata_t*) ((char*) tmp + GET_SIZE(tmp) + METADATA_T_ALIGNED);
+    if(nextHeader < end_of_world) nextHeader->size |= 0x2;
+    freelist[whichList] = freelist[whichList]->next;
+    if(freelist[whichList] != NULL) freelist[whichList]->prev = NULL;
+    if(tmp->next != NULL) tmp->next->prev = tmp->prev;
+    ret = (void *) BP(tmp);
   }
-
-  DEBUG("AFTER DMALLOC\n");
+  
+  print_all();
   print_freelist();
 
-  return (void*) tmp;
+  return ret;
 }
 
 void dfree(void* ptr) {
-  metadata_t* header = (metadata_t*)((char*) ptr - METADATA_T_ALIGNED);
-  metadata_t* tmpPrev = NULL;
-  metadata_t* tmp = freelist;
+  DEBUG("FREE %p\n", ptr);
 
-  DEBUG("BEFORE DFREE %p\n", ptr);
+  print_all();
   print_freelist();
-  
-  if(header > tmp) {
-    while(tmp != NULL && header >= tmp) {
-      tmpPrev = tmp;
-      tmp = tmp->next;
+
+  metadata_t* header = (metadata_t*) ((char*) ptr - METADATA_T_ALIGNED);
+  metadata_t* footer = (metadata_t*) ((char*) ptr + GET_SIZE(header) - METADATA_T_ALIGNED);
+  metadata_t* nextHeader = (metadata_t*) ((char*) ptr + GET_SIZE(header));
+
+  header->size &= (~0x1); // set alloc to free
+  footer->size = header->size; // copy header into footer
+
+  bool prevFree = GET_PREV_ALLOC(header) == 0x0;
+  bool nextFree = (nextHeader < end_of_world) && (GET_ALLOC(nextHeader) == 0x0);
+
+  metadata_t* prevHeader = NULL;
+  if(prevFree) { // if prev is free then it must have a footer
+    prevHeader = (metadata_t*) ((char *) header - GET_SIZE(((char *) header - METADATA_T_ALIGNED)) - METADATA_T_ALIGNED);
+    // remove prevHeader from freelist
+    int whichList = where_to_put(GET_SIZE(prevHeader));
+    if(freelist[whichList] == prevHeader) { 
+      freelist[whichList] = freelist[whichList]->next;
+      if(freelist[whichList] != NULL) freelist[whichList]->prev = NULL;
+    } else {
+      prevHeader->prev->next = prevHeader->next;
+      if(prevHeader->next != NULL) prevHeader->next->prev = prevHeader->prev;
     }
   }
 
-  addNode(tmpPrev, header, tmp);
-  DEBUG("ADD NODE\n");
-  print_freelist();
-
-  // coalesce right
-  if(tmp != NULL && (char*)header + METADATA_T_ALIGNED + header->size == (char*) tmp) {
-    header->size += tmp->size + METADATA_T_ALIGNED;
-    header->next = tmp->next;
-    if(tmp->next != NULL) tmp->next->prev = header;
+  if(nextHeader < end_of_world) {
+    nextHeader->size &= (~0x2); // set prev_alloc of the next block to free
+    if(nextFree) {
+      // remove nextHeader from freelist
+      int whichList = where_to_put(GET_SIZE(nextHeader));
+      if(freelist[whichList] == nextHeader) { 
+        freelist[whichList] = freelist[whichList]->next;
+        if(freelist[whichList] != NULL) freelist[whichList]->prev = NULL;
+      } else {
+        nextHeader->prev->next = nextHeader->next;
+        if(nextHeader->next != NULL) nextHeader->next->prev = nextHeader->prev;
+      }
+    }
   }
 
-  // coalesce left
-  if(tmpPrev != NULL && (char*)header - METADATA_T_ALIGNED - tmpPrev->size == (char*) tmpPrev) {
-    tmpPrev->size += header->size + METADATA_T_ALIGNED;
-    tmpPrev->next = header->next;
-    if(header->next != NULL) header->next->prev = tmpPrev;
+  void* toPut = NULL;
+  if(!prevFree && !nextFree) {
+    DEBUG("NO COALESCE\n");
+    toPut = (void *) header; // no coalesce
+  } else if(prevFree && !nextFree) { // coalesce to the left
+    DEBUG("COALESCE LEFT\n");
+    prevHeader->size = 
+      PACK(GET_SIZE(prevHeader) + METADATA_T_ALIGNED + GET_SIZE(header), GET_PREV_ALLOC(prevHeader), GET_ALLOC(prevHeader));
+    ((metadata_t *) ((char*) prevHeader + GET_SIZE(prevHeader)))->size = prevHeader->size;
+    toPut = (void *) prevHeader;
+  } else if(!prevFree && nextFree) { // coalesce to the right
+    DEBUG("COALESCE RIGHT\n");
+    header->size = 
+      PACK(GET_SIZE(header) + METADATA_T_ALIGNED + GET_SIZE(nextHeader), GET_PREV_ALLOC(header), GET_ALLOC(header));
+    ((metadata_t *) ((char*) header + GET_SIZE(header)))->size = header->size;
+    toPut = (void *) header;
+  } else { // coalesce both left and right
+    DEBUG("COALESCE BOTH\n");
+    prevHeader->size =
+      PACK(GET_SIZE(prevHeader) + METADATA_T_ALIGNED + GET_SIZE(header) + METADATA_T_ALIGNED + GET_SIZE(nextHeader),
+	  GET_PREV_ALLOC(prevHeader), GET_ALLOC(prevHeader));
+    ((metadata_t *) ((char*) prevHeader + GET_SIZE(prevHeader)))->size = prevHeader->size;
+    toPut = (void *) prevHeader;
   }
 
-  DEBUG("AFTER DFREE\n");
+  put_free_block(toPut); // then put into corresponding freelist
+
+  print_all();
   print_freelist();
 }
 
 bool dmalloc_init() {
-
-  /* Two choices: 
-   * 1. Append prologue and epilogue blocks to the start and the
-   * end of the freelist 
-   *
-   * 2. Initialize freelist pointers to NULL
-   *
-   * Note: We provide the code for 2. Using 1 will help you to tackle the 
-   * corner cases succinctly.
-   */
-
   size_t max_bytes = ALIGN(MAX_HEAP_SIZE);
-  /* returns heap_region, which is initialized to freelist */
-  freelist = (metadata_t*) sbrk(max_bytes); 
-  /* Q: Why casting is used? i.e., why (void*)-1? */
-  if (freelist == (void *)-1)
-    return false;
-  freelist->next = NULL;
-  freelist->prev = NULL;
-  freelist->size = max_bytes-METADATA_T_ALIGNED;
+  int whichList = where_to_put(max_bytes-METADATA_T_ALIGNED);
+  if(whichList == -1) return false; // if none is available... fail...
+
+  freelist[whichList] = (metadata_t*) sbrk(max_bytes); 
+  end_of_world = (metadata_t*) ((char*) freelist[whichList] + max_bytes); // update end_of_world
+  if(start_of_world == NULL) start_of_world = (metadata_t*) freelist[whichList]; // update start_of_world
+
+  if (freelist[whichList] == (void *)-1) return false;
+
+  metadata_t* footer = (metadata_t *) ((char *) freelist[whichList] + max_bytes - METADATA_T_ALIGNED);
+  freelist[whichList]->next = footer->next = NULL;
+  freelist[whichList]->prev = footer->prev = NULL;
+  freelist[whichList]->size = footer->size = PACK(max_bytes-METADATA_T_ALIGNED, 0x2, 0x0);
   return true;
 }
 
 /* for debugging; can be turned off through -NDEBUG flag*/
 void print_freelist() {
-  metadata_t *freelist_head = freelist;
-  while(freelist_head != NULL) {
-    DEBUG("\tFreelist Size:%zd, Head:%p, Prev:%p, Next:%p\t",
-	  freelist_head->size,
-	  freelist_head,
-	  freelist_head->prev,
-	  freelist_head->next);
-    freelist_head = freelist_head->next;
+  for(int i = 0 ; i < MAX_SEGRAGATION ; i ++) {
+    metadata_t *freelist_head = freelist[i];
+    while(freelist_head != NULL) {
+      DEBUG("\t%d'th segragation: Freelist Size:%zd, Head:%p, Next:%p, Prev:%p\t",
+	    i,
+            GET_SIZE(freelist_head),
+            freelist_head,
+            freelist_head->next,
+	    freelist_head->prev
+	    );
+      freelist_head = freelist_head->next;
+    }
+  }
+  DEBUG("\n");
+}
+
+void print_all() {
+  metadata_t* tmp = start_of_world;
+  while(tmp < end_of_world) {
+      DEBUG("%s, Size:%zd\tHead:%p\tNext:%p\tPrev:%p(%s)\t",
+	    GET_ALLOC(tmp) == 0 ? "Free" : "ALLOC",
+            GET_SIZE(tmp),
+            tmp,
+            tmp->next,
+	    tmp->prev,
+	    GET_PREV_ALLOC(tmp) == 0 ? "Free" : "ALLOC"
+	    );
+      metadata_t* footer = (metadata_t*) ((char*) tmp + GET_SIZE(tmp));
+      if(GET_ALLOC(tmp) == 0) 
+	DEBUG("FOOTER Size:%zd\tHead:%p\tNext:%p\tPrev:%p(%s)\t",
+            GET_SIZE(footer),
+            footer,
+            footer->next,
+	    footer->prev,
+	    GET_PREV_ALLOC(footer) == 0 ? "Free" : "ALLOC"
+	    );
+    tmp = (metadata_t*) ((char *) tmp + GET_SIZE(tmp) + METADATA_T_ALIGNED);
   }
   DEBUG("\n");
 }
