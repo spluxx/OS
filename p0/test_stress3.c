@@ -22,7 +22,7 @@
 #define MAX_ALLOC_SIZE (MAX_HEAP_SIZE/100)
 
 /* Set to 1 for non-deterministic seeding after each execution */
-#define PSEUDO_RANDOM_SEED    1
+#define PSEUDO_RANDOM_SEED    0
 
 #define ALLOC_CONST	0.5
 

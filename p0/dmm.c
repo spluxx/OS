@@ -47,9 +47,11 @@ bool check_init() {
 
 int find_freelist(size_t numbytes) {
   int whichList = -1;
+  bool active = false;
   for(int i = 0 ; i < MAX_SEGRAGATION ; i ++) {  
     LL ub = (1UL << (i+1)) * ALIGNMENT - 1;
-    if(numbytes <= ub && freelist[i] != NULL) { whichList = i; break; } // find min i that has free block for numbytes 
+    if(active && freelist[i] != NULL) { whichList = i; break; } // find min i that has free block for numbytes 
+    if(numbytes <= ub) active = true;
   } return whichList;
 }
 
@@ -82,7 +84,7 @@ void* dmalloc(size_t numbytes) {
 
   assert(numbytes > 0);
 
-  print_all();
+  DEBUG("BEFORE MALLOC %lu\n", numbytes);
   print_freelist();
    
   numbytes = ALIGN(numbytes);
@@ -102,22 +104,31 @@ void* dmalloc(size_t numbytes) {
     nextBlk->next = nextFtr->next = tmp->next;
     nextBlk->prev = nextFtr->prev = NULL;
     if(nextBlk->next != NULL) nextBlk->next->prev = nextBlk;
+
     freelist[whichList] = freelist[whichList]->next;
     if(freelist[whichList] != NULL) freelist[whichList]->prev = NULL;
+
+    DEBUG("split %p %p\n", tmp, nextBlk);
     put_free_block(nextBlk);
     ret = (void *) BP(tmp);
   } else { // just
     tmp->size = PACK(GET_SIZE(tmp), GET_PREV_ALLOC(tmp), 0x1);
     metadata_t* nextHeader = (metadata_t*) ((char*) tmp + GET_SIZE(tmp) + METADATA_T_ALIGNED);
     if(nextHeader < end_of_world) nextHeader->size |= 0x2;
+
     freelist[whichList] = freelist[whichList]->next;
     if(freelist[whichList] != NULL) freelist[whichList]->prev = NULL;
+
     if(tmp->next != NULL) tmp->next->prev = tmp->prev;
+    DEBUG("2 %p\n", tmp);
     ret = (void *) BP(tmp);
   }
+  ((metadata_t*) ret)->next = NULL;
+  ((metadata_t*) ret)->prev = NULL;
   
-  print_all();
+  DEBUG("AFTER MALLOC RETURNING %p\n", ret);
   print_freelist();
+  
 
   return ret;
 }
@@ -125,7 +136,6 @@ void* dmalloc(size_t numbytes) {
 void dfree(void* ptr) {
   DEBUG("FREE %p\n", ptr);
 
-  print_all();
   print_freelist();
 
   metadata_t* header = (metadata_t*) ((char*) ptr - METADATA_T_ALIGNED);
@@ -194,7 +204,6 @@ void dfree(void* ptr) {
 
   put_free_block(toPut); // then put into corresponding freelist
 
-  print_all();
   print_freelist();
 }
 
@@ -213,6 +222,7 @@ bool dmalloc_init() {
   freelist[whichList]->next = footer->next = NULL;
   freelist[whichList]->prev = footer->prev = NULL;
   freelist[whichList]->size = footer->size = PACK(max_bytes-METADATA_T_ALIGNED, 0x2, 0x0);
+
   return true;
 }
 
