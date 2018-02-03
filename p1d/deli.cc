@@ -3,51 +3,64 @@
 #include "thread.h"
 using namespace std;
 
-// Locks
-const int BOARD_LOCK = 1;
-const int NUMBER_OF_CASHIER_LOCK = 2;
-// Condition Variables
-const int ORDER_COMPLETE = 1;
+// ------- Locks -------------------------
+const int BOARD_LOCK = 1; //		  |
+const int NUMBER_OF_CASHIER_LOCK = 2; //  |
+// ---------------------------------------
+
+// ------- Conditional Variable ----------
+const int ORDER_COMPLETE = 1; //          |
+// ---------------------------------------
 
 struct order_info {
   int cashier_id;
   int sandwich_number;
 };
 
-int max_orders, nCashier;
-vector<order_info> board;
-int num_posts;
+int max_orders; 
 
-int *order_complete;
+// GOVERNED BY NUMBER_OF_CASHIER_LOCK --------------
+int nCashier;	    //				    |
+// -------------------------------------------------
+
+// GOVERNED BY BOARD_LOCK ---------------------------
+vector<order_info*> board; //			     | 
+int *order_complete; // 0 (incomplete) 1 (complete)  |
+// --------------------------------------------------
 
 void create_cashier(FILE* order_file) {
   int myID = -1;
   order_info* info = (order_info*) malloc(sizeof(order_info));
 
-  thread_lock(NUMBER_OF_CASHIER_LOCK);
-  myID = nCashier ++;
-  thread_unlock(NUMBER_OF_CASHIER_LOCK);
+  // -----------------USING nCashier--------
+  thread_lock(NUMBER_OF_CASHIER_LOCK); //   |
+  myID = nCashier ++;		       //   |
+  thread_unlock(NUMBER_OF_CASHIER_LOCK); // |
+  // ---------------------------------------
 
   info->cashier_id = myID;
 
   while(fscanf(order_file, "%d", &info->sandwich_number) != EOF) {
-    thread_lock(BOARD_LOCK); // ------------------USING BOARD---------------- //
-
-    if(board.size() < max_orders)  // if there's space on the board post order
-      board.push_back(info);
-
-    order_complete[myID] = 0; // order is not completed
-
+    // ------------------USING BOARD--------------------------------------------
+    thread_lock(BOARD_LOCK); //							|
+    if(board.size() < max_orders)  // if there's space on the board post order  |
+      board.push_back(info); //							|
+    order_complete[myID] = 0; // order is not completed				|
+    // -------------------------------------------------------------------------
     while(order_complete[myID] == 0) // keep waiting until we get signal(order complete) from the cooker 
-      thread_wait(BOARD_LOCK, ORDER_COMPLETE);
-
-    thread_unlock(BOARD_LOCK);
+      thread_wait(BOARD_LOCK, ORDER_COMPLETE); 
+    // -----------USING BOARD----------
+    thread_unlock(BOARD_LOCK); //      |
+    // --------------------------------
   }
 
-  thread_lock(NUMBER_OF_CASHIER_LOCK);
-  nCashier --;
-  thread_unlock(NUMBER_OF_CASHIER_LOCK);
+  // -----------------USING nCashier--------
+  thread_lock(NUMBER_OF_CASHIER_LOCK); //   |
+  nCashier --;			       //   |
+  thread_unlock(NUMBER_OF_CASHIER_LOCK); // |
+  // ---------------------------------------
 
+  free(info);
   fclose(order_file); 
 }
 
