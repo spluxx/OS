@@ -31,7 +31,7 @@ int max_orders, nCashier;
 bool full, done;
 
 // GOVERNED BY NUMBER_OF_CASHIER_LOCK --------------
-int liveCashier;	    //      |
+int liveCashier;			    //      |
 // -------------------------------------------------
 
 // GOVERNED BY BOARD_LOCK ---------------------------
@@ -42,19 +42,18 @@ int *order_complete; // 0 (incomplete) 1 (complete)  |
 void create_maker() {
   int made_last = -1;
 
-  //while(!initialized) thread_wait(MAKER_LOCK, MAKER_LOCK);
-
   while(true) {
     int mi = 0;
     int mn = 5000;
     order_info toCook;
 
     thread_lock(BOARD_LOCK);
-    while(!full) thread_wait(BOARD_LOCK, BOARD_FULL);
-
+    // wait for board_full signal
+    while(!full) thread_wait(BOARD_LOCK, BOARD_FULL);	
     if(done) break;
 
-    for(int i = 0 ; i < board.size() ; i ++) {
+    // find closest sandwich from made_last
+    for(int i = 0 ; i < board.size() ; i ++) {		
       int diff = abs(board[i].sandwich_id - made_last);
       if(diff < mn) {
         mi = i;
@@ -72,7 +71,7 @@ void create_maker() {
     thread_unlock(MONITOR_LOCK);
 
     full = false;
-    thread_broadcast(BOARD_LOCK, BOARD_NOT_FULL); // signal the cashier
+    thread_broadcast(BOARD_LOCK, BOARD_NOT_FULL); // broadcast board_not_full signal
 
     thread_unlock(BOARD_LOCK);
   }
@@ -83,40 +82,46 @@ void create_maker() {
 void create_cashier(FILE* order_file) {
   int myID = -1;
 
-  // -----------------USING nCashier--------
-  thread_lock(NUMBER_OF_CASHIER_LOCK); //   |
-  myID = liveCashier++;		       //   |
-  thread_unlock(NUMBER_OF_CASHIER_LOCK); // |
-  // ---------------------------------------
+  thread_lock(NUMBER_OF_CASHIER_LOCK); 
+  myID = liveCashier++;		       
+  thread_unlock(NUMBER_OF_CASHIER_LOCK);
   
   int sandwich = -1;
   order_complete[myID] = 1;
+
+  // read order one by one
   while(fscanf(order_file, "%d", &sandwich) != EOF) {
     thread_lock(BOARD_LOCK); 							
 
+    // the previous order must have been completed
+    // to wait for board_not_full broadcast 
     while(full || order_complete[myID] == 0) thread_wait(BOARD_LOCK, BOARD_NOT_FULL);
 
-    board.push_back(order_info(myID, sandwich));
-    order_complete[myID] = 0; // order is not completed			
+    board.push_back(order_info(myID, sandwich));	  // post an order
+    order_complete[myID] = 0;
 
     thread_lock(MONITOR_LOCK);
     cout << "POSTED: cashier " << myID << " sandwich " << sandwich << endl; 
     thread_unlock(MONITOR_LOCK);
 
     if(board.size() == max_orders) {
-      full = true;
-      thread_signal(BOARD_LOCK, BOARD_FULL); 
+      full = true; 
+      // send board_full signal
+      thread_signal(BOARD_LOCK, BOARD_FULL);
     }
-
-    while(order_complete[myID] == 0) thread_wait(BOARD_LOCK, BOARD_NOT_FULL);
 
     thread_unlock(BOARD_LOCK);
   }
 
-  // -----------------USING nCashier------------------------
-  thread_lock(NUMBER_OF_CASHIER_LOCK); //		    |
+  // wait for final order
+  thread_lock(BOARD_LOCK);
+  while(order_complete[myID] == 0) thread_wait(BOARD_LOCK, BOARD_NOT_FULL);
+  thread_unlock(BOARD_LOCK);
+
+  // cashier can go home now
+  thread_lock(NUMBER_OF_CASHIER_LOCK); 
   if(--liveCashier < max_orders) {
-    max_orders = liveCashier;  //			    |
+    max_orders = liveCashier;  
     if(liveCashier == 0) done = true;
 
     thread_lock(BOARD_LOCK);
@@ -124,8 +129,7 @@ void create_cashier(FILE* order_file) {
     thread_signal(BOARD_LOCK, BOARD_FULL);
     thread_unlock(BOARD_LOCK);
   }
-  thread_unlock(NUMBER_OF_CASHIER_LOCK); //		    |
-  // -------------------------------------------------------
+  thread_unlock(NUMBER_OF_CASHIER_LOCK);
 
   fclose(order_file);
 }
@@ -133,7 +137,6 @@ void create_cashier(FILE* order_file) {
 void initialize(char* order_files[]) {
   start_preemptions(true, true, 1);
   order_complete = (int *) malloc(sizeof(int)*nCashier);
-
   for(int i = 2 ; i <= nCashier+1 ; i ++)
     thread_create((thread_startfunc_t) create_cashier, fopen(order_files[i], "r"));
   thread_create((thread_startfunc_t) create_maker, NULL);
@@ -146,6 +149,7 @@ int main(int argc, char* argv[]) {
   sscanf(argv[1], "%d", &max_orders);
   done = nCashier <= 0;
   max_orders = max_orders < nCashier ? max_orders : nCashier;
+
   thread_libinit((thread_startfunc_t) initialize, argv);
   return 0;
 }
