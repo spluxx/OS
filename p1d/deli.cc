@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <vector>
 #include "thread.h"
 using namespace std;
@@ -18,7 +19,7 @@ struct order_info {
 int max_orders; 
 
 // GOVERNED BY NUMBER_OF_CASHIER_LOCK --------------
-int nCashier, done;	    //			    |
+int nCashier, liveCashier, done;	    //      |
 // -------------------------------------------------
 
 // GOVERNED BY BOARD_LOCK ---------------------------
@@ -63,13 +64,13 @@ void create_cashier(void* order_file) {
 
   // -----------------USING nCashier--------
   thread_lock(NUMBER_OF_CASHIER_LOCK); //   |
-  myID = nCashier ++;		       //   |
+  myID = liveCashier ++;	       //   |
   thread_unlock(NUMBER_OF_CASHIER_LOCK); // |
   // ---------------------------------------
 
   info->cashier_id = myID;
 
-  while(fscanf((FILE*) order_file, "%d", &info->sandwich_id) != EOF) {
+  while(fscanf((FILE*) order_file, "%d", &(info->sandwich_id)) != EOF) {
     thread_lock(BOARD_LOCK); 							
     if(board.size() < max_orders) { // if there's space on the board post order 
       board.push_back(info); //							
@@ -80,11 +81,12 @@ void create_cashier(void* order_file) {
     thread_unlock(BOARD_LOCK);
   }
 
-  // -----------------USING nCashier--------
-  thread_lock(NUMBER_OF_CASHIER_LOCK); //   |
-  if(--nCashier == 0) done = 1;		//  |
-  thread_unlock(NUMBER_OF_CASHIER_LOCK); // |
-  // ---------------------------------------
+  // -----------------USING nCashier---------------------
+  thread_lock(NUMBER_OF_CASHIER_LOCK); //	      //|
+  if(liveCashier < max_orders) max_orders = liveCashier; //|
+  if(--liveCashier == 0) done = 1;	//		|
+  thread_unlock(NUMBER_OF_CASHIER_LOCK); //		|
+  // ----------------------------------------------------
 
   free(info);
   fclose((FILE*) order_file); 
@@ -92,16 +94,18 @@ void create_cashier(void* order_file) {
 
 void initialize(char* order_files[]) {
   order_complete = (int *) malloc(sizeof(int)*nCashier);
-  for(int i = 0 ; i < nCashier ; i ++)
-    thread_create(create_cashier, fopen((char*) order_files[i], "r"));
+  for(int i = 2 ; i <= nCashier+1 ; i ++) {
+    thread_create((thread_startfunc_t) create_cashier, fopen(order_files[i], "r"));
+  }
+  thread_create((thread_startfunc_t) create_maker, NULL);
   free(order_complete);
 }
 
 int main(int argc, char* argv[]) {
   nCashier = argc-2;
+  liveCashier = 0;
   done = nCashier > 0 ? 0 : 1;
   sscanf(argv[1], "%d", &max_orders);
-
   thread_libinit((thread_startfunc_t) initialize, argv);
   return 0;
 }
