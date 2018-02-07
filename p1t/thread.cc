@@ -1,49 +1,49 @@
+#include <stdlib.h>
 #include <ucontext.h>
+#include <signal.h>
 #include <list>
 #include <queue>
 #include <map>
 using namespace std;
 
-/*
-#define STACK_SIZE 262144	size of each thread's stack
+#include "thread.h"
 
-typedef void (*thread_startfunc_t) (void *);
+map<void*, bool> thread_complete; // 0 incomplete 1 complete
+map<int, bool> lock_available;
+queue<ucontext_t *, deque<ucontext_t *> > readyQ, runningQ, sleepingQ;
 
-extern int thread_libinit(thread_startfunc_t func, void *arg);
-extern int thread_create(thread_startfunc_t func, void *arg);
-extern int thread_yield(void);
-*/
-
-map<void*, bool> func_complete; // 0 incomplete 1 complete
-queue<uncontext_t *, deque<uncontext_t *> > readyQ, runningQ, sleepingQ;
-
-thread_startfun_t func_extend(void* ucp_ptr, thread_startfun_t func, void* arg) {
+void func_extend(void* ucp, thread_startfunc_t func, void* arg) {
   func(arg);
-  func_complete[stk_ptr] = 1;
-  free(((ucontext_t *)ucp_ptr)->uc_stack->ss_sp);
-  free(((ucontext_t *)ucp_ptr)->uc_stack);
-  free(ucp_ptr);
+  thread_complete[ucp] = 1;
+  free(((ucontext_t *)ucp)->uc_stack.ss_sp);
+  free(ucp);
 }
 
-int thread_create(thread_startfun_t func, void *arg) {
+int thread_libinit(thread_startfunc_t func, void *arg) { thread_create(func, arg); }
+
+int thread_create(thread_startfunc_t func, void *arg) {
   void* stk_ptr = malloc(STACK_SIZE); 
   ucontext_t *ucp = (ucontext_t *) malloc(sizeof(ucontext_t));
-  stack_t *stp = (stack_t *) malloc(sizeof(stack_t));
 
-  if(stk_ptr == NULL || ucp == NULL || stp == NULL) {
+  if(stk_ptr == NULL || ucp == NULL) {
     free(stk_ptr);
     free(ucp);
-    free(stp);
     return -1;
   }
 
-  stp->ss_sp = stk_ptr;
-  stp->ss_flags = 0;
-  stp->ss_size = STACK_SIZE;
-  ucp->uc_stack = stp;
+  getcontext(ucp);
 
-  makecontext(ucp, func_extend(ucp, func, arg));
+  ucp->uc_stack.ss_sp = stk_ptr;
+  ucp->uc_stack.ss_size = STACK_SIZE;
+  ucp->uc_stack.ss_flags = 0;
+  ucp->uc_link = NULL;
+
+  makecontext(ucp, (void (*)()) func_extend, 3, ucp, func, arg);
   readyQ.push(ucp);
 
   return 0;
+}
+
+int thread_yield(void) {
+  waitingQ.push(
 }
