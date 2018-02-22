@@ -1,19 +1,27 @@
 #include <stdlib.h>
 #include <iostream>
 #include <ucontext.h>
-#include <signal.h>
-#include <list>
 #include <queue>
 #include <map>
+#include <algorithm>
+#include "thread.h"
 using namespace std;
 
-#include "thread.h"
+typedef unsigned int lock_t;
+typedef pair<unsigned int, unsigned int> lock_cv_t;
 
 map<ucontext_t *, bool> thread_complete; // true if complete
-map<int, bool> lock_available;
 
+// lock and condition variable owners
+// if available, owner = null
+map<lock_t, ucontext_t *> lock_owner;
+map<lock_cv_t, ucontext_t *> cv_owner;
+
+// ucontext storages
 ucontext_t *running, *tmp; 
-deque<ucontext_t *> readyQ, waitingQ;
+deque<ucontext_t *> readyQ;
+map<lock_t, deque<ucontext_t *> > wait_lockQ;
+map<lock_cv_t, deque<ucontext_t *> > wait_cvQ;
 
 //------------------------helper functions-------------------------------//
 
@@ -42,6 +50,14 @@ void func_extend(void *ucp, thread_startfunc_t func, void *arg) {
   func(arg);
   thread_complete[(ucontext_t *)ucp] = true;
   thread_yield(); // after freeing whatever, yield the CPU
+}
+
+void exit_lib() {
+  // we should probably try one more time to wake threads up
+  collect_garbage(true);
+  // can't really free the last thread... fuck
+  cout << "Thread library exiting.\n";
+  exit(0);
 }
 
 //------------------------library functions-------------------------------//
@@ -81,22 +97,47 @@ int thread_create(thread_startfunc_t func, void *arg) {
   return 0;
 }
 
-int thread_yield(void) {
+int thread_yield(void) { 
   if(readyQ.size() == 0) {
-    if(thread_complete[running]) {
-      // we should probably try one more time to wake threads up
-      collect_garbage(true);
-      // can't really free the last thread... fuck
-      cout << "Thread library exiting.\n";
-      exit(0);
-    }
-    return 0;
+    if(thread_complete[running]) exit_lib();
+    else return 0;
   } 
-
+  
   if(running != NULL && !thread_complete[running]) // if running thread is neither complete nor nil
     readyQ.push_back(running); // put running thread into ready queue
 
   running = readyQ.front(); 
   readyQ.pop_front(); // pop one thread to run from ready queue
   return swapcontext(readyQ.size() == 0 ? tmp : readyQ.back(), running);
+}
+
+int thread_lock(lock_t lock) {
+  // if lock doesn't even exist within our knowledge, initialize it to NULL
+  if(lock_owner.find(lock) == lock_owner.end()) lock_owner[lock] = NULL;
+  // if the thread wants a lock when it already holds it - fuck you
+  if(lock_owner[lock] == running) return -1;
+  // if the lock is unavailable, wait
+  if(lock_owner[lock] != NULL) {
+    wait_lockQ[lock].push_back(running);
+    if(readyQ.size() == 0) exit_lib();
+    running = readyQ.front();
+    readyQ.pop_front();
+    return swapcontext(wait_lockQ[lock].back(), running);
+  // if the lock is available, yyaaaas!
+  } else lock_owner[lock] = running;
+  return 0;
+}
+
+int thread_unlock(lock_t lock) {
+  // if lock doesn't even exist within our knowledge, initialize it to NULL
+  if(lock_owner.find(lock) == lock_owner.end()) lock_owner[lock] = NULL;
+  // if the thread tries to return a lock it doesn't even own - fuck you
+  if(lock_owner[lock] != running) return -1;
+  // alright this thread actually has a lock - unlock it;
+  if(wait_lockQ[lock].size() > 0) {
+    lock_owner[lock] = wait_lockQ[lock].front();
+    readyQ.push_back(wait_lockQ[lock].front());
+    wait_lockQ[lock].pop_front();
+  } else lock_owner[lock] = NULL;
+  return 0;
 }

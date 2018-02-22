@@ -1,0 +1,7 @@
+First repo file.
+
+./test.sh - <br>
+Tests all test files specified on Makefile, <br>
+using the given thread library object and <br>
+our thread library to make two different outputs, <br>
+and then comparing them.
