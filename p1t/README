@@ -1,7 +1,6 @@
-First repo file.
+# THREAD LIBRARY
 
-./test.sh - <br>
-Tests all test files specified on Makefile, <br>
-using the given thread library object and <br>
-our thread library to make two different outputs, <br>
-and then comparing them.
+### ./test.sh
+Tests all test files specified on the Makefile. 
+Compares the output of a program run with our thread library
+to that of a program run with the instructor-given library.
