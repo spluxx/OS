@@ -1,10 +1,12 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <iostream>
 #include <ucontext.h>
 #include <queue>
 #include <map>
 #include <algorithm>
 #include "thread.h"
+#include "interrupt.h"
 using namespace std;
 
 typedef unsigned int lock_t;
@@ -52,12 +54,11 @@ void func_extend(void *ucp, thread_startfunc_t func, void *arg) {
   thread_yield(); // after freeing whatever, yield the CPU
 }
 
-void exit_lib() {
-  // we should probably try one more time to wake threads up
+int exit_lib() {
   collect_garbage(true);
-  // can't really free the last thread... fuck
   cout << "Thread library exiting.\n";
   exit(0);
+  return 0;
 }
 
 //------------------------library functions-------------------------------//
@@ -98,46 +99,59 @@ int thread_create(thread_startfunc_t func, void *arg) {
 }
 
 int thread_yield(void) { 
+  interrupt_disable();
   if(readyQ.size() == 0) {
     if(thread_complete[running]) exit_lib();
     else return 0;
   } 
   
-  if(running != NULL && !thread_complete[running]) // if running thread is neither complete nor nil
-    readyQ.push_back(running); // put running thread into ready queue
+  // DO NOT put back into ready queue 
+  // if the current running thread is
+  // 1. the initial thread (running = NULL)
+  // 2. done running
+  bool noswap = running == NULL || thread_complete[running];
+  if(!noswap) readyQ.push_back(running); 
 
+  // pop a thread to run, setting it as running
   running = readyQ.front(); 
-  readyQ.pop_front(); // pop one thread to run from ready queue
-  return swapcontext(readyQ.size() == 0 ? tmp : readyQ.back(), running);
+  readyQ.pop_front(); 
+  interrupt_enable();
+
+  return swapcontext(noswap ? tmp : readyQ.back(), running);
 }
 
 int thread_lock(lock_t lock) {
+  interrupt_disable();
   // if lock doesn't even exist within our knowledge, initialize it to NULL
   if(lock_owner.find(lock) == lock_owner.end()) lock_owner[lock] = NULL;
   // if the thread wants a lock when it already holds it - fuck you
-  if(lock_owner[lock] == running) return -1;
+  if(lock_owner[lock] == running) { interrupt_enable(); return 1; }
   // if the lock is unavailable, wait
   if(lock_owner[lock] != NULL) {
     wait_lockQ[lock].push_back(running);
     if(readyQ.size() == 0) exit_lib();
     running = readyQ.front();
     readyQ.pop_front();
+    interrupt_enable();
     return swapcontext(wait_lockQ[lock].back(), running);
   // if the lock is available, yyaaaas!
   } else lock_owner[lock] = running;
+  interrupt_enable();
   return 0;
 }
 
 int thread_unlock(lock_t lock) {
+  interrupt_disable();
   // if lock doesn't even exist within our knowledge, initialize it to NULL
   if(lock_owner.find(lock) == lock_owner.end()) lock_owner[lock] = NULL;
   // if the thread tries to return a lock it doesn't even own - fuck you
-  if(lock_owner[lock] != running) return -1;
+  if(lock_owner[lock] != running) { interrupt_enable(); return -1; }
   // alright this thread actually has a lock - unlock it;
   if(wait_lockQ[lock].size() > 0) {
     lock_owner[lock] = wait_lockQ[lock].front();
     readyQ.push_back(wait_lockQ[lock].front());
     wait_lockQ[lock].pop_front();
   } else lock_owner[lock] = NULL;
+  interrupt_enable();
   return 0;
 }
