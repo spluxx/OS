@@ -18,6 +18,7 @@ using namespace std;
 typedef unsigned int lock_t;
 typedef pair<unsigned int, unsigned int> lock_cv_t;
 
+static int complete_threads;
 static map<ucontext_t *, bool> thread_complete; // true if complete
 
 // lock owners
@@ -51,6 +52,7 @@ void collect_garbage(bool done) {
       thread_complete.erase(it++); // erase from thread_complete
     } else it ++;
   }
+  complete_threads = 0;
 }
 
 // function wrapper, forcing the given function to
@@ -61,6 +63,7 @@ void func_extend(void *ucp, thread_startfunc_t func, void *arg) {
   interrupt_enable();
   func(arg);
   thread_complete[(ucontext_t *)ucp] = true;
+  complete_threads ++;
   DEBUG("COMPLETED %p", ucp);
   thread_yield(); // after freeing whatever, yield the CPU
 }
@@ -75,7 +78,9 @@ int exit_lib() {
 //------------------------library functions-------------------------------//
 
 int thread_libinit(thread_startfunc_t func, void *arg) { 
-  running = NULL;
+  if(tmp != NULL) return -1;
+  running = tmp = NULL;
+  complete_threads = 0;
   if(!(tmp = (ucontext_t *) malloc(sizeof(ucontext_t)))) return -1;
   thread_create(func, arg); // create initial thread
   thread_yield(); // start the initial thread
@@ -84,6 +89,7 @@ int thread_libinit(thread_startfunc_t func, void *arg) {
 
 int thread_create(thread_startfunc_t func, void *arg) {
   interrupt_disable();
+  if(tmp == NULL) return interrupt_enable(-1);
   DEBUG("INTERRUPT_DISABLE: THREAD_CREATE %p", running);
   void *stk_ptr = malloc(STACK_SIZE); 
   ucontext_t *ucp = (ucontext_t *) malloc(sizeof(ucontext_t));
@@ -116,16 +122,12 @@ int thread_yield(void) {
   DEBUG("INTERRUPT_DISABLE: THREAD_YIELD %p", running);
   DEBUG("YIELDING %p", running);
   
-  map<ucontext_t *, bool>::iterator it = thread_complete.begin();
-  while(it != thread_complete.end()) {
-    DEBUG("%p %d", it->first, it->second);
-    it ++;
-  }DEBUG("");
-
   if(readyQ.size() == 0) {
     if(thread_complete[running]) exit_lib();
     else return interrupt_enable(0);
   } 
+
+  if(complete_threads > 10) collect_garbage(false);
   
   bool init_thread = running == NULL;
   // DO NOT put back into ready queue 
