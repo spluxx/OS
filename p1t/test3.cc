@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include "thread.h"
 
-const int PINGPONGS = 10;
-const int LOOPS = 10;
+const int PINGPONGS = 100;
+const int LOOPS = 100;
 
 void ping_pong(int cv) {
   thread_lock(1);

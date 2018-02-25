@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "thread.h"
 
-const int MAX_THREADS = 20;
+const int MAX_THREADS = 100;
 int threads = MAX_THREADS;
 bool barrier_down;
 

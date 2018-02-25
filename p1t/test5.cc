@@ -6,6 +6,7 @@
 using namespace std;
 
 int abs(int a) { return a > 0 ? a : -a; }
+const int N = 100;
 
 // ------- Locks -------------------------
 const int BOARD_LOCK = 1; //		  |
@@ -134,29 +135,23 @@ void create_cashier(int* sandwiches) {
 }
 
 void initialize(void) {
+  srand(1024);
   order_complete = (int *) malloc(sizeof(int)*nCashier);
-  int sandwiches[5][5] ={
-    {1, 3, 53, 100, 50},
-    {5, 530, 123, 539, 929},
-    {19, 512, 12, 942, 42},
-    {63, 623, 236, 123, 643},
-    {464, 235, 132, 696, 709}
-  };
-  int** sandwich_number = (int **) malloc(sizeof(int *) * 5);
-  for(int i = 0 ; i < 5 ; i ++) {
-    sandwich_number[i] = (int *) malloc(sizeof(int) * 5);
-    for(int j = 0 ; j < 5 ; j ++)
-      sandwich_number[i][j] = sandwiches[i][j];
+  int** sandwich_number = (int **) malloc(sizeof(int *) * N);
+  for(int i = 0 ; i < N ; i ++) {
+    sandwich_number[i] = (int *) malloc(sizeof(int) * N);
+    for(int j = 0 ; j < N ; j ++)
+      sandwich_number[i][j] = rand()%1000;
   }
 
-  for(int i = 0 ; i < 5 ; i ++)
+  for(int i = 0 ; i < N ; i ++)
     thread_create((thread_startfunc_t) create_cashier, (void*) sandwich_number[i]);
   thread_create((thread_startfunc_t) create_maker, NULL);
 }
 
 int main(int argc, char* argv[]) {
-  nCashier = 5;
-  max_orders = 3;
+  nCashier = N;
+  max_orders = 54;
   liveCashier = 0;
   full = false;
   done = nCashier <= 0;
