@@ -9,10 +9,10 @@
 #include "interrupt.h"
 using namespace std;
 
-#ifdef NDEBUG
-  #define DEBUG(M, ...)
-#else
+#ifdef DEBUG
   #define DEBUG(M, ...) fprintf(stderr, "[DEBUG] %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#else
+  #define DEBUG(M, ...)
 #endif
 
 typedef unsigned int lock_t;
@@ -20,10 +20,9 @@ typedef pair<unsigned int, unsigned int> lock_cv_t;
 
 static map<ucontext_t *, bool> thread_complete; // true if complete
 
-// lock and condition variable owners
+// lock owners
 // if available, owner = null
 static map<lock_t, ucontext_t *> lock_owner;
-static map<lock_cv_t, ucontext_t *> cv_owner;
 
 // ucontext storages
 static ucontext_t *running, *tmp; 
@@ -192,5 +191,75 @@ int thread_unlock(lock_t lock) {
     DEBUG("THROW LOCK AWAY", lock_owner[lock]);
     lock_owner[lock] = NULL;
   }
+  return interrupt_enable(0);
+}
+
+int thread_wait(lock_t lock, lock_t cv) {
+  interrupt_disable();
+  DEBUG("INTERRUPT_DISABLE: THREAD_WAIT %p", running);
+  lock_cv_t lock_cv = make_pair(lock, cv);
+  // if lock doesn't even exist within our knowledge, initialize it to NULL
+  if(lock_owner.find(lock) == lock_owner.end()) lock_owner[lock] = NULL;
+  // if the thread doesn't have a lock to begin with - fuck you
+  if(lock_owner[lock] != running) return interrupt_enable(-1);
+  
+  DEBUG("DROP LOCK %p => %p", running, wait_lockQ[lock].front());
+  // drop the lock
+  if(wait_lockQ[lock].size() > 0) {
+    lock_owner[lock] = wait_lockQ[lock].front();
+    readyQ.push_back(wait_lockQ[lock].front());
+    wait_lockQ[lock].pop_front();
+  } else lock_owner[lock] = NULL;
+
+  // and wait
+  wait_cvQ[lock_cv].push_back(running);
+
+  DEBUG("WAIT: YIELD %p => %p", running, readyQ.front());
+  // yield
+  if(readyQ.size() == 0) { interrupt_enable(); exit_lib(); } 
+  running = readyQ.front();
+  readyQ.pop_front();
+  swapcontext(wait_cvQ[lock_cv].back(), running);
+  interrupt_enable();
+
+  // when it wakes up, pick up the lock
+  return thread_lock(lock);
+}
+
+int thread_signal(lock_t lock, lock_t cv) {
+  interrupt_disable();
+  DEBUG("INTERRUPT_DISABLE: THREAD_SIGNAL %p", running);
+  lock_cv_t lock_cv = make_pair(lock, cv);
+
+  // if lock doesn't even exist within our knowledge, initialize it to NULL
+  if(lock_owner.find(lock) == lock_owner.end()) lock_owner[lock] = NULL;
+  
+  DEBUG("PING: %p => %p", running, wait_cvQ[lock_cv].front());
+  // wake a waiting thread up
+  if(wait_cvQ[lock_cv].size() == 0) return interrupt_enable(0);
+  readyQ.push_back(wait_cvQ[lock_cv].front());
+  wait_cvQ[lock_cv].pop_front();
+  
+  DEBUG("INTERRUPT_ENABLE: THREAD_SIGNAL %p", running);
+  return interrupt_enable(0);
+}
+
+int thread_broadcast(lock_t lock, lock_t cv) {
+  interrupt_disable();  
+  DEBUG("INTERRUPT_DISABLE: THREAD_BROADCAST %p", running);
+  lock_cv_t lock_cv = make_pair(lock, cv);
+
+  // if lock doesn't even exist within our knowledge, initialize it to NULL
+  if(lock_owner.find(lock) == lock_owner.end()) lock_owner[lock] = NULL;
+  
+  DEBUG("PING: %p => %p", running, wait_cvQ[lock_cv].front());
+  // wake every waiting thread up
+  int size = wait_cvQ[lock_cv].size();
+  for(int i = 0 ; i < size; i ++) {
+    readyQ.push_back(wait_cvQ[lock_cv].front());
+    wait_cvQ[lock_cv].pop_front();
+  }
+  
+  DEBUG("INTERRUPT_ENABLE: THREAD_BRAODCAST %p", running);
   return interrupt_enable(0);
 }

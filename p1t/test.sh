@@ -4,10 +4,6 @@ make clean
 make all
 
 for filename in tests/*; do
-  $filename >> "$filename"".out"
-done
-
-for filename in tests/*; do
   if [[ "$filename" =~ test.*[^v].out ]]; then
     a="$filename"
     verify_file=${a/".out"/"_v.out"}

@@ -79,7 +79,7 @@ void create_maker() {
   free(order_complete);
 }
 
-void create_cashier(FILE* order_file) {
+void create_cashier(int* sandwiches) {
   int myID = -1;
 
   thread_lock(NUMBER_OF_CASHIER_LOCK); 
@@ -90,7 +90,8 @@ void create_cashier(FILE* order_file) {
   order_complete[myID] = 1;
 
   // read order one by one
-  while(fscanf(order_file, "%d", &sandwich) != EOF) {
+  for(int i = 0 ; i < 5 ; i ++) {
+    sandwich = sandwiches[i];
     thread_lock(BOARD_LOCK); 							
 
     // the previous order must have been completed
@@ -130,26 +131,37 @@ void create_cashier(FILE* order_file) {
     thread_unlock(BOARD_LOCK);
   }
   thread_unlock(NUMBER_OF_CASHIER_LOCK);
-
-  fclose(order_file);
 }
 
-void initialize(char* order_files[]) {
-  start_preemptions(true, true, 1);
+void initialize(void) {
   order_complete = (int *) malloc(sizeof(int)*nCashier);
-  for(int i = 2 ; i <= nCashier+1 ; i ++)
-    thread_create((thread_startfunc_t) create_cashier, fopen(order_files[i], "r"));
+  int sandwiches[5][5] ={
+    {1, 3, 53, 100, 50},
+    {5, 530, 123, 539, 929},
+    {19, 512, 12, 942, 42},
+    {63, 623, 236, 123, 643},
+    {464, 235, 132, 696, 709}
+  };
+  int** sandwich_number = (int **) malloc(sizeof(int *) * 5);
+  for(int i = 0 ; i < 5 ; i ++) {
+    sandwich_number[i] = (int *) malloc(sizeof(int) * 5);
+    for(int j = 0 ; j < 5 ; j ++)
+      sandwich_number[i][j] = sandwiches[i][j];
+  }
+
+  for(int i = 0 ; i < 5 ; i ++)
+    thread_create((thread_startfunc_t) create_cashier, (void*) sandwich_number[i]);
   thread_create((thread_startfunc_t) create_maker, NULL);
 }
 
 int main(int argc, char* argv[]) {
-  nCashier = argc-2;
+  nCashier = 5;
+  max_orders = 3;
   liveCashier = 0;
   full = false;
-  sscanf(argv[1], "%d", &max_orders);
   done = nCashier <= 0;
   max_orders = max_orders < nCashier ? max_orders : nCashier;
 
-  thread_libinit((thread_startfunc_t) initialize, argv);
+  thread_libinit((thread_startfunc_t) initialize, NULL);
   return 0;
 }
