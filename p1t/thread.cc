@@ -9,23 +9,32 @@
 #include "interrupt.h"
 using namespace std;
 
+#ifdef NDEBUG
+  #define DEBUG(M, ...)
+#else
+  #define DEBUG(M, ...) fprintf(stderr, "[DEBUG] %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#endif
+
 typedef unsigned int lock_t;
 typedef pair<unsigned int, unsigned int> lock_cv_t;
 
-map<ucontext_t *, bool> thread_complete; // true if complete
+static map<ucontext_t *, bool> thread_complete; // true if complete
 
 // lock and condition variable owners
 // if available, owner = null
-map<lock_t, ucontext_t *> lock_owner;
-map<lock_cv_t, ucontext_t *> cv_owner;
+static map<lock_t, ucontext_t *> lock_owner;
+static map<lock_cv_t, ucontext_t *> cv_owner;
 
 // ucontext storages
-ucontext_t *running, *tmp; 
-deque<ucontext_t *> readyQ;
-map<lock_t, deque<ucontext_t *> > wait_lockQ;
-map<lock_cv_t, deque<ucontext_t *> > wait_cvQ;
+static ucontext_t *running, *tmp; 
+static deque<ucontext_t *> readyQ;
+static map<lock_t, deque<ucontext_t *> > wait_lockQ;
+static map<lock_cv_t, deque<ucontext_t *> > wait_cvQ;
 
 //------------------------helper functions-------------------------------//
+
+int interrupt_enable(int ret) { interrupt_enable(); return ret; }
+int interrupt_disable(int ret) { interrupt_disable(); return ret; }
 
 void free_ucontext(void *ucp) {
   free(((ucontext_t *)ucp)->uc_stack.ss_sp);
@@ -38,6 +47,7 @@ void collect_garbage(bool done) {
   while(it != thread_complete.end()) {
     // if the program's about to exit OR if the thread is completed
     if((it->first != running) && (done || it->second)) {
+      DEBUG("FREE %p", it->first);
       free_ucontext(it->first); // free
       thread_complete.erase(it++); // erase from thread_complete
     } else it ++;
@@ -49,8 +59,10 @@ void collect_garbage(bool done) {
 // 2. report completion for GC;
 // 3. yield CPU to next ready thread.
 void func_extend(void *ucp, thread_startfunc_t func, void *arg) {
+  interrupt_enable();
   func(arg);
   thread_complete[(ucontext_t *)ucp] = true;
+  DEBUG("COMPLETED %p", ucp);
   thread_yield(); // after freeing whatever, yield the CPU
 }
 
@@ -64,27 +76,28 @@ int exit_lib() {
 //------------------------library functions-------------------------------//
 
 int thread_libinit(thread_startfunc_t func, void *arg) { 
-  tmp = (ucontext_t *) malloc(sizeof(ucontext_t));
-  if(tmp == NULL) return -1;
-  running = NULL; // initialize
-
+  running = NULL;
+  if(!(tmp = (ucontext_t *) malloc(sizeof(ucontext_t)))) return -1;
   thread_create(func, arg); // create initial thread
   thread_yield(); // start the initial thread
   return 0; // NOT EXECUTED
 }
 
 int thread_create(thread_startfunc_t func, void *arg) {
+  interrupt_disable();
+  DEBUG("INTERRUPT_DISABLE: THREAD_CREATE %p", running);
   void *stk_ptr = malloc(STACK_SIZE); 
   ucontext_t *ucp = (ucontext_t *) malloc(sizeof(ucontext_t));
 
   if(stk_ptr == NULL || ucp == NULL) {
     free(stk_ptr);
     free(ucp);
-    return -1;
+    return interrupt_enable(-1);
   }
+  DEBUG("CREATING %p", ucp);
 
   // setup context for the new thread
-  getcontext(ucp);
+  if(getcontext(ucp)) return -1;
   ucp->uc_stack.ss_sp = stk_ptr;
   ucp->uc_stack.ss_size = STACK_SIZE;
   ucp->uc_stack.ss_flags = 0;
@@ -94,64 +107,90 @@ int thread_create(thread_startfunc_t func, void *arg) {
 
   thread_complete[ucp] = false;
   readyQ.push_back(ucp);
-
-  return 0;
+  DEBUG("FINISHED CREATING %p", ucp);
+  DEBUG("INTERRUPT_ENABLE: THREAD_CREATE %p", running);
+  return interrupt_enable(0);
 }
 
 int thread_yield(void) { 
   interrupt_disable();
+  DEBUG("INTERRUPT_DISABLE: THREAD_YIELD %p", running);
+  DEBUG("YIELDING %p", running);
+  
+  map<ucontext_t *, bool>::iterator it = thread_complete.begin();
+  while(it != thread_complete.end()) {
+    DEBUG("%p %d", it->first, it->second);
+    it ++;
+  }DEBUG("");
+
   if(readyQ.size() == 0) {
     if(thread_complete[running]) exit_lib();
-    else return 0;
+    else return interrupt_enable(0);
   } 
   
+  bool init_thread = running == NULL;
   // DO NOT put back into ready queue 
   // if the current running thread is
   // 1. the initial thread (running = NULL)
   // 2. done running
-  bool noswap = running == NULL || thread_complete[running];
+  bool noswap = init_thread || thread_complete[running];
   if(!noswap) readyQ.push_back(running); 
 
   // pop a thread to run, setting it as running
   running = readyQ.front(); 
   readyQ.pop_front(); 
-  interrupt_enable();
-
-  return swapcontext(noswap ? tmp : readyQ.back(), running);
+  DEBUG("SWAP %p to %p", noswap ? tmp : readyQ.back(), running);
+  swapcontext(noswap ? tmp : readyQ.back(), running);
+  if(!init_thread) {
+    DEBUG("INTERRUPT_ENABLE: THREAD_CREATE %p", running);
+    DEBUG("INTERRUPT ENABLED- %p", running);
+    interrupt_enable();
+  } return 0;
 }
 
 int thread_lock(lock_t lock) {
   interrupt_disable();
+  DEBUG("INTERRUPT_DISABLE: THREAD_LOCK %p", running);
+
+  DEBUG("TRYING TO GET LOCK %p %lu %p:", running, wait_lockQ[lock].size(), lock_owner[lock]);
   // if lock doesn't even exist within our knowledge, initialize it to NULL
   if(lock_owner.find(lock) == lock_owner.end()) lock_owner[lock] = NULL;
   // if the thread wants a lock when it already holds it - fuck you
-  if(lock_owner[lock] == running) { interrupt_enable(); return 1; }
+  if(lock_owner[lock] == running) return interrupt_enable(-1);
   // if the lock is unavailable, wait
   if(lock_owner[lock] != NULL) {
     wait_lockQ[lock].push_back(running);
-    if(readyQ.size() == 0) exit_lib();
+    if(readyQ.size() == 0) { interrupt_enable(); exit_lib(); }
+    DEBUG("CAN't GET LOCK YIELDING TO %p => %p", running, readyQ.front());
     running = readyQ.front();
     readyQ.pop_front();
-    interrupt_enable();
-    return swapcontext(wait_lockQ[lock].back(), running);
-  // if the lock is available, yyaaaas!
-  } else lock_owner[lock] = running;
-  interrupt_enable();
-  return 0;
+    swapcontext(wait_lockQ[lock].back(), running);
+  } else {
+    // if the lock is available, YAS
+    DEBUG("GOT LOCK", running);
+    lock_owner[lock] = running;
+  }
+  return interrupt_enable(0);
 }
 
 int thread_unlock(lock_t lock) {
   interrupt_disable();
+  DEBUG("INTERRUPT_DISABLE: THREAD_UNLOCK %p", running);
+
+  DEBUG("UNLOCK %p => %p", running, wait_lockQ[lock].front());
   // if lock doesn't even exist within our knowledge, initialize it to NULL
   if(lock_owner.find(lock) == lock_owner.end()) lock_owner[lock] = NULL;
   // if the thread tries to return a lock it doesn't even own - fuck you
-  if(lock_owner[lock] != running) { interrupt_enable(); return -1; }
+  if(lock_owner[lock] != running) return interrupt_enable(-1);
   // alright this thread actually has a lock - unlock it;
   if(wait_lockQ[lock].size() > 0) {
     lock_owner[lock] = wait_lockQ[lock].front();
     readyQ.push_back(wait_lockQ[lock].front());
     wait_lockQ[lock].pop_front();
-  } else lock_owner[lock] = NULL;
-  interrupt_enable();
-  return 0;
+    DEBUG("GIVE LOCK TO %p", lock_owner[lock]);
+  } else {
+    DEBUG("THROW LOCK AWAY", lock_owner[lock]);
+    lock_owner[lock] = NULL;
+  }
+  return interrupt_enable(0);
 }

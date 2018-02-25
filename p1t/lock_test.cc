@@ -6,7 +6,7 @@ using namespace std;
 
 #define LOCK 1
 
-const int NTHREADS = 5;
+const int NTHREADS = 100;
 vector<int> mark;
 
 void mini(int i) {
