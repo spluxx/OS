@@ -1,6 +1,6 @@
 #You can use either a gcc or g++ compiler
 CC = g++
-NTESTS = 8
+NTESTS = 7
 TESTS = build_tests exec_tests
 CFLAGS = -ldl -g3 -Wall # -DDEBUG
 

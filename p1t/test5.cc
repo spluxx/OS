@@ -6,7 +6,7 @@
 using namespace std;
 
 int abs(int a) { return a > 0 ? a : -a; }
-const int N = 100;
+const int N = 50;
 
 // ------- Locks -------------------------
 const int BOARD_LOCK = 1; //		  |
@@ -135,12 +135,15 @@ void create_cashier(int* sandwiches) {
 }
 
 void initialize(void) {
+  //start_preemptions(false,true, 135853);
   srand(1024);
   order_complete = (int *) malloc(sizeof(int)*nCashier);
   int** sandwich_number = (int **) malloc(sizeof(int *) * N);
+  if(sandwich_number == NULL) return;
   for(int i = 0 ; i < N ; i ++) {
-    sandwich_number[i] = (int *) malloc(sizeof(int) * N);
-    for(int j = 0 ; j < N ; j ++)
+    sandwich_number[i] = (int *) malloc(sizeof(int) * N*50);
+    if(sandwich_number[i] == NULL) return;
+    for(int j = 0 ; j < N*50 ; j ++)
       sandwich_number[i][j] = rand()%1000;
   }
 

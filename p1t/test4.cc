@@ -24,6 +24,7 @@ void barriered_thread(int id) {
 }
 
 void initial_thread(void) {
+  //start_preemptions(false, true, 13581038);
   barrier_down = false;
   thread_create((thread_startfunc_t) barrier_thread, NULL);
   for(int i = 0 ; i < MAX_THREADS ; i ++)

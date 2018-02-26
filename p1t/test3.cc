@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include "thread.h"
 
-const int PINGPONGS = 100;
-const int LOOPS = 100;
+const int PINGPONGS = 10;
+const int LOOPS = 10;
 
 void ping_pong(int cv) {
   thread_lock(1);
@@ -15,8 +15,9 @@ void ping_pong(int cv) {
 }
 
 void init_thread() {
-  for(int i = 0 ; i < PINGPONGS ; i ++)
-    thread_create((thread_startfunc_t) ping_pong, (void *) i);
+  //start_preemptions(true, true, 235203);
+  for(int i = 0 ; i < PINGPONGS*10 ; i ++)
+    thread_create((thread_startfunc_t) ping_pong, (void *) (i%PINGPONGS));
 }
 
 int main() {
