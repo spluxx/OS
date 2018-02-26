@@ -79,10 +79,11 @@ int thread_libinit(thread_startfunc_t func, void *arg) {
   if(tmp != NULL) return -1;
   running = tmp = NULL;
   complete_threads = 0;
-  if(!(tmp = (ucontext_t *) malloc(sizeof(ucontext_t)))) return -1;
-  thread_create(func, arg); // create initial thread
-  thread_yield(); // start the initial thread
-  return 0; // NOT EXECUTED
+  tmp = (ucontext_t *) malloc(sizeof(ucontext_t));
+  if(tmp == NULL) return -1;
+  if(thread_create(func, arg) == -1) return -1; // create initial thread
+  if(thread_yield() == -1) return -1; // start the initial thread
+  return -1; // NOT EXECUTED
 }
 
 int thread_create(thread_startfunc_t func, void *arg) {
@@ -120,7 +121,7 @@ int thread_yield(void) {
     else return interrupt_enable(0);
   } 
 
-  if(complete_threads > 10) collect_garbage(false);
+  if(complete_threads > 1000) collect_garbage(false);
   
   bool init_thread = running == NULL;
   // DO NOT put back into ready queue 

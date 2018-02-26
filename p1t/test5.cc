@@ -6,7 +6,7 @@
 using namespace std;
 
 int abs(int a) { return a > 0 ? a : -a; }
-const int N = 50;
+const int N = 20;
 
 // ------- Locks -------------------------
 const int BOARD_LOCK = 1; //		  |
