@@ -121,7 +121,7 @@ int thread_yield(void) {
     else return interrupt_enable(0);
   } 
 
-  if(complete_threads > 1000) collect_garbage(false);
+  if(complete_threads > 10) collect_garbage(false);
   
   bool init_thread = running == NULL;
   // DO NOT put back into ready queue 
