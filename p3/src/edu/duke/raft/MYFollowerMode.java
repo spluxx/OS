@@ -1,6 +1,19 @@
 package edu.duke.raft;
+import java.util.*;
+
+// Every server starts as a follower. 
+// Objectives:
+// 			1. Detect when the current leader has failed. /Detect failure by setting "election timeout" (random value between 150 - 300 ms. 
+//			FAILED-->CANDIDATE MODE
+//			2. Vote in election (implement the refined election criterion)
+
 
 public class FollowerMode extends RaftMode {
+  private Timer timer;
+  private Random random = new Random();
+  
+
+
   public void go () {
     synchronized (mLock) {
       int term = 0;
