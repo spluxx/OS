@@ -9,8 +9,20 @@ import java.util.*;
 
 
 public class FollowerMode extends RaftMode {
-  private Timer timer;
-  private Random random = new Random();
+	private int fTitle = 2;
+	private Timer timer;
+	private Random random = new Random();
+	private boolean isSwitched = true; 
+	
+	private void followerTimer(){
+		synchronized(mLock){
+  			if(mConfig.getTimeoutOverride()<=0){
+	 			timer = scheduleTimer((long) random.nextInt(ELECTION_TIMEOUT_MAX - ELECTION_TIMEOUT_MIN + 1) + (ELECTION_TIMEOUT_MIN), fTitle);
+  			} else{
+  				timer = scheduleTimer)mConfig.getTimeoutOverride(), fTitle);
+  			}
+		}
+	}
   
 
 
@@ -22,6 +34,8 @@ public class FollowerMode extends RaftMode {
 			  "." + 
 			  term + 
 			  ": switched to follower mode.");
+	  isSwitched = false;
+	  followerTimer();
     }
   }
   
@@ -36,9 +50,27 @@ public class FollowerMode extends RaftMode {
 			  int lastLogIndex,
 			  int lastLogTerm) {
     synchronized (mLock) {
-      int term = mConfig.getCurrentTerm ();
-      int vote = term;
-      return vote;
+      int term = mConfig.getCurrentTerm();
+      if(isSwitched || candidateTerm<term) return term;
+      if(candidateTerm>term){
+      	if(lastLogTerm>mLog.getLastTerm() || (lastLogIndex >= mLog.getLastIndex() && lastLogTerm==mLog.getLastTerm())) {
+      		timer.cancel();
+      		mConfig.setCurrentTerm(candidateTerm,candidateID);
+      		followerTimer();
+      		return 0;
+      	} else {
+      		if(mConfig.getVotedfor()==0||mConfig.getVotedfor()==candidateID){
+      			if(lastLogTerm>mLog.getLastTerm() || (lastLogIndex >= mLog.getLastIndex() && lastLogTerm==mLog.getLastTerm())){
+      				timer.cancel();
+      				mConfig.setCurrentTerm(candidateTerm,candidateID);
+      				followerTimer();
+      				return 0;
+      			}
+      		}
+      	} else{
+      		return mConfig.getCurrentTerm();	
+      	}
+      }
     }
   }
   
@@ -59,14 +91,18 @@ public class FollowerMode extends RaftMode {
 			    int leaderCommit) {
     synchronized (mLock) {
       int term = mConfig.getCurrentTerm ();
-      int result = term;
-      return result;
+      if(isSwitched || leaderTerm<term) return term;
+      if(leaderTerm>term) mConfig.setCurrentTerm(leaderTerm,0);
+      timer.cancel();
+      followerTimer();
+      //NOt complete
     }
   }  
 
   // @param id of the timer that timed out
   public void handleTimeout (int timerID) {
     synchronized (mLock) {
+    	
     }
   }
 }
