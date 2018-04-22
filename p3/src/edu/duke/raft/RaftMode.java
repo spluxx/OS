@@ -277,5 +277,3 @@ public abstract class RaftMode {
   // @param id of the timer that timed out
   abstract public void handleTimeout (int timerID);
 }
-
-  
