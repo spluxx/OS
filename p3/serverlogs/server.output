@@ -1,0 +1,548 @@
+TIME_TO_SIMULATE=20
+S2.1: Log { (1 1) }
+S1.1: Log { (1 1) }
+S3.1: Log { (1 1) }
+S2.1: Log { (1 1) }
+S1.1: switched to follower mode.
+S3.1: switched to follower mode.
+S3.2: switched to candidate mode.
+S3.3: switched to candidate mode.
+S3.3: qualified for leader mode.
+S3.3: switched to leader mode.
+APPEND RPC!!!
+S1.4: switched to candidate mode.
+S3.4: switched to follower mode.
+S1.4: qualified for leader mode.
+S1.4: switched to leader mode.
+APPEND RPC!!!
+S3.5: switched to candidate mode.
+S1.5: switched to follower mode.
+S3.5: qualified for leader mode.
+S3.5: switched to leader mode.
+APPEND RPC!!!
+S1.6: switched to candidate mode.
+S3.6: switched to follower mode.
+S1.6: qualified for leader mode.
+S1.6: switched to leader mode.
+APPEND RPC!!!
+S3.7: switched to candidate mode.
+S1.7: switched to follower mode.
+S3.7: qualified for leader mode.
+S3.7: switched to leader mode.
+APPEND RPC!!!
+S1.8: switched to candidate mode.
+S3.8: switched to follower mode.
+S1.8: qualified for leader mode.
+S1.8: switched to leader mode.
+APPEND RPC!!!
+S3.9: switched to candidate mode.
+S1.9: switched to follower mode.
+S3.9: qualified for leader mode.
+S3.9: switched to leader mode.
+APPEND RPC!!!
+S1.10: switched to candidate mode.
+S3.10: switched to follower mode.
+S1.10: qualified for leader mode.
+S1.10: switched to leader mode.
+APPEND RPC!!!
+S3.11: switched to candidate mode.
+S1.11: switched to follower mode.
+S3.11: qualified for leader mode.
+S3.11: switched to leader mode.
+APPEND RPC!!!
+S1.12: switched to candidate mode.
+S3.12: switched to follower mode.
+S1.12: qualified for leader mode.
+S1.12: switched to leader mode.
+APPEND RPC!!!
+S3.13: switched to candidate mode.
+S1.13: switched to follower mode.
+S3.13: qualified for leader mode.
+S3.13: switched to leader mode.
+APPEND RPC!!!
+S1.14: switched to candidate mode.
+S3.14: switched to follower mode.
+S1.14: qualified for leader mode.
+S1.14: switched to leader mode.
+S1.15: switched to candidate mode.
+S1.15: qualified for leader mode.
+S1.15: switched to leader mode.
+S2.1: switched to follower mode.
+APPEND RPC!!!
+APPEND RPC!!!
+S3.16: switched to candidate mode.
+S1.16: switched to follower mode.
+S3.16: qualified for leader mode.
+S3.16: switched to leader mode.
+S3.17: switched to candidate mode.
+S3.17: qualified for leader mode.
+S3.17: switched to leader mode.
+S3.18: switched to candidate mode.
+S3.18: qualified for leader mode.
+S3.18: switched to leader mode.
+S3.19: switched to candidate mode.
+S3.19: qualified for leader mode.
+S3.19: switched to leader mode.
+APPEND RPC!!!
+APPEND RPC!!!
+APPEND RPC!!!
+S2.20: switched to candidate mode.
+S3.20: switched to follower mode.
+S2.20: qualified for leader mode.
+APPEND RPC!!!
+S2.20: switched to leader mode.
+S2.21: switched to candidate mode.
+S2.21: qualified for leader mode.
+S2.21: switched to leader mode.
+S2.22: switched to candidate mode.
+S2.22: qualified for leader mode.
+S2.22: switched to leader mode.
+S1.23: switched to candidate mode.
+S2.23: switched to follower mode.
+S1.23: qualified for leader mode.
+S1.23: switched to leader mode.
+APPEND RPC!!!
+S2.24: switched to candidate mode.
+S1.24: switched to follower mode.
+S2.24: qualified for leader mode.
+S2.24: switched to leader mode.
+S2.25: switched to candidate mode.
+S3.26: switched to candidate mode.
+S2.25: qualified for leader mode.
+S2.25: switched to leader mode.
+S2.26: switched to follower mode.
+S2.27: switched to candidate mode.
+S3.26: switched to follower mode.
+APPEND RPC!!!
+S3.27: switched to candidate mode.
+S3.27: qualified for leader mode.
+S3.27: switched to leader mode.
+S2.27: qualified for leader mode.
+S2.27: switched to leader mode.
+S3.27: qualified for leader mode.
+APPEND RPC!!!
+S3.28: switched to candidate mode.
+S2.28: switched to candidate mode.
+APPEND RPC!!!
+S2.28: qualified for leader mode.
+S2.28: switched to leader mode.
+S2.29: switched to candidate mode.
+S3.28: switched to follower mode.
+S3.29: switched to candidate mode.
+S2.29: qualified for leader mode.
+S2.29: switched to leader mode.
+APPEND RPC!!!
+APPEND RPC!!!
+APPEND RPC!!!
+APPEND RPC!!!
+APPEND RPC!!!
+APPEND RPC!!!
+S3.30: switched to candidate mode.
+S2.30: switched to follower mode.
+S3.30: qualified for leader mode.
+S3.30: switched to leader mode.
+S3.31: switched to candidate mode.
+S3.32: switched to candidate mode.
+S3.32: qualified for leader mode.
+S3.32: switched to leader mode.
+S3.32: qualified for leader mode.
+S2.33: switched to candidate mode.
+S3.33: switched to follower mode.
+S1.34: switched to candidate mode.
+S2.33: switched to follower mode.
+S2.33: qualified for leader mode.
+S2.33: switched to leader mode.
+S1.34: qualified for leader mode.
+S1.34: switched to leader mode.
+S1.35: switched to candidate mode.
+S2.35: switched to follower mode.
+S1.35: qualified for leader mode.
+S1.35: switched to leader mode.
+S1.36: switched to candidate mode.
+S1.36: qualified for leader mode.
+S1.36: switched to leader mode.
+S2.37: switched to candidate mode.
+S1.37: switched to follower mode.
+APPEND RPC!!!
+S2.37: qualified for leader mode.
+S2.37: switched to leader mode.
+APPEND RPC!!!
+S1.38: switched to candidate mode.
+S2.38: switched to follower mode.
+APPEND RPC!!!
+S1.38: qualified for leader mode.
+S1.38: switched to leader mode.
+S1.39: switched to candidate mode.
+APPEND RPC!!!
+S1.39: qualified for leader mode.
+S1.39: switched to leader mode.
+S1.40: switched to candidate mode.
+APPEND RPC!!!
+S3.41: switched to candidate mode.
+S1.40: switched to follower mode.
+S1.40: qualified for leader mode.
+S1.40: switched to leader mode.
+S1.41: switched to follower mode.
+APPEND RPC!!!
+S3.41: qualified for leader mode.
+S3.41: switched to leader mode.
+S3.42: switched to candidate mode.
+APPEND RPC!!!
+S3.42: qualified for leader mode.
+S3.42: switched to leader mode.
+S1.43: switched to candidate mode.
+S3.43: switched to follower mode.
+S3.44: switched to candidate mode.
+S1.43: switched to follower mode.
+S1.43: qualified for leader mode.
+S1.43: switched to leader mode.
+S3.44: qualified for leader mode.
+S3.44: switched to leader mode.
+APPEND RPC!!!
+S1.44: switched to candidate mode.
+S3.45: switched to candidate mode.
+S1.44: switched to follower mode.
+APPEND RPC!!!
+S1.45: switched to candidate mode.
+S3.45: qualified for leader mode.
+S3.45: switched to leader mode.
+APPEND RPC!!!
+S3.46: switched to candidate mode.
+S1.45: switched to follower mode.
+S2.46: switched to candidate mode.
+APPEND RPC!!!
+S1.47: switched to candidate mode.
+S3.46: switched to follower mode.
+S2.46: switched to follower mode.
+S3.46: qualified for leader mode.
+S3.46: switched to leader mode.
+S2.47: switched to candidate mode.
+S3.47: switched to candidate mode.
+S1.47: qualified for leader mode.
+S1.47: switched to leader mode.
+APPEND RPC!!!
+APPEND RPC!!!
+APPEND RPC!!!
+S1.48: switched to candidate mode.
+S2.47: switched to follower mode.S3.47: switched to follower mode.
+
+S1.48: qualified for leader mode.
+S1.48: switched to leader mode.
+S2.48: switched to candidate mode.
+S1.49: switched to candidate mode.
+S2.48: switched to follower mode.
+S3.50: switched to candidate mode.
+S1.49: switched to follower mode.
+APPEND RPC!!!
+S1.49: qualified for leader mode.
+S1.49: switched to leader mode.
+S1.50: switched to candidate mode.
+APPEND RPC!!!
+S1.50: qualified for leader mode.
+S1.50: switched to leader mode.
+APPEND RPC!!!
+S1.51: switched to candidate mode.
+S2.51: switched to candidate mode.
+S3.50: switched to follower mode.
+S3.52: switched to candidate mode.
+S1.51: qualified for leader mode.
+S1.51: switched to leader mode.
+S2.51: switched to follower mode.
+S1.52: switched to follower mode.
+S1.53: switched to candidate mode.
+S3.52: switched to follower mode.
+S3.53: switched to candidate mode.
+S3.53: qualified for leader mode.
+S3.53: switched to leader mode.
+S2.54: switched to candidate mode.
+S1.53: switched to follower mode.
+S3.54: switched to follower mode.
+S1.53: qualified for leader mode.
+S1.53: switched to leader mode.
+APPEND RPC!!!
+S2.54: qualified for leader mode.
+S2.54: switched to leader mode.
+S1.54: switched to candidate mode.
+APPEND RPC!!!
+S2.55: switched to candidate mode.
+S1.54: switched to follower mode.
+S3.56: switched to candidate mode.
+S2.55: switched to follower mode.
+APPEND RPC!!!
+S2.55: qualified for leader mode.
+S2.55: switched to leader mode.
+S3.56: qualified for leader mode.
+S3.56: switched to leader mode.
+S1.57: switched to candidate mode.
+S3.57: switched to candidate mode.
+S2.57: switched to follower mode.
+S2.58: switched to candidate mode.
+S1.57: switched to follower mode.
+S3.57: switched to follower mode.
+S3.58: switched to candidate mode.
+S2.58: qualified for leader mode.
+S2.58: switched to leader mode.
+S1.59: switched to candidate mode.
+S2.59: switched to candidate mode.
+APPEND RPC!!!
+S1.59: qualified for leader mode.
+S1.59: switched to leader mode.
+S2.59: qualified for leader mode.
+S2.59: switched to leader mode.
+APPEND RPC!!!
+S2.60: switched to candidate mode.
+S1.60: switched to follower mode.
+APPEND RPC!!!
+APPEND RPC!!!
+S2.60: qualified for leader mode.
+S2.60: switched to leader mode.
+S3.61: switched to candidate mode.
+S2.61: switched to candidate mode.
+S2.62: switched to candidate mode.
+S1.62: switched to candidate mode.
+S3.61: switched to follower mode.
+S3.63: switched to candidate mode.
+S2.63: switched to candidate mode.
+S1.62: switched to follower mode.
+S1.64: switched to candidate mode.
+S3.64: switched to candidate mode.
+S2.63: switched to follower mode.
+APPEND RPC!!!
+S3.64: qualified for leader mode.
+S3.64: switched to leader mode.
+S3.64: qualified for leader mode.
+APPEND RPC!!!
+S3.65: switched to candidate mode.
+S1.64: switched to follower mode.
+APPEND RPC!!!
+S3.65: qualified for leader mode.
+S3.65: switched to leader mode.
+S2.66: switched to candidate mode.
+S3.66: switched to follower mode.
+APPEND RPC!!!
+APPEND RPC!!!
+S2.67: switched to candidate mode.
+S2.67: qualified for leader mode.
+S2.67: switched to leader mode.
+S3.67: switched to candidate mode.
+S3.68: switched to candidate mode.
+S3.69: switched to candidate mode.
+S3.69: qualified for leader mode.
+S3.69: switched to leader mode.
+S1.70: switched to candidate mode.
+S3.70: switched to follower mode.
+S3.71: switched to candidate mode.
+S1.70: switched to follower mode.
+S3.71: qualified for leader mode.
+S3.71: switched to leader mode.
+S3.71: qualified for leader mode.
+S3.72: switched to candidate mode.
+S3.72: qualified for leader mode.
+S3.72: switched to leader mode.
+S3.72: qualified for leader mode.
+S3.73: switched to candidate mode.
+APPEND RPC!!!
+S3.73: qualified for leader mode.
+S3.73: switched to leader mode.
+S3.74: switched to candidate mode.
+APPEND RPC!!!
+S3.75: switched to candidate mode.
+S3.75: qualified for leader mode.
+S3.75: switched to leader mode.
+S3.75: qualified for leader mode.
+S1.76: switched to candidate mode.
+S3.76: switched to follower mode.
+APPEND RPC!!!
+S1.76: qualified for leader mode.
+S1.76: switched to leader mode.
+S1.77: switched to candidate mode.
+APPEND RPC!!!
+S1.77: qualified for leader mode.
+S1.77: switched to leader mode.
+S3.78: switched to candidate mode.
+APPEND RPC!!!
+S1.78: switched to follower mode.
+S3.78: qualified for leader mode.
+S3.78: switched to leader mode.
+S1.79: switched to candidate mode.
+S3.79: switched to follower mode.
+APPEND RPC!!!
+S1.79: qualified for leader mode.
+S1.79: switched to leader mode.
+S3.80: switched to candidate mode.
+S1.80: switched to follower mode.
+APPEND RPC!!!
+S1.81: switched to candidate mode.
+S3.80: switched to follower mode.
+S3.80: qualified for leader mode.
+S3.80: switched to leader mode.
+S1.82: switched to candidate mode.
+S3.82: switched to follower mode.
+S1.82: qualified for leader mode.
+S1.82: switched to leader mode.
+S1.83: switched to candidate mode.
+S1.83: qualified for leader mode.
+S1.84: switched to candidate mode.
+S1.84: qualified for leader mode.
+S1.84: switched to leader mode.
+APPEND RPC!!!
+S1.84: qualified for leader mode.
+APPEND RPC!!!
+APPEND RPC!!!
+S3.85: switched to candidate mode.
+S1.85: switched to follower mode.
+APPEND RPC!!!
+S3.85: qualified for leader mode.
+S3.85: switched to leader mode.
+APPEND RPC!!!
+APPEND RPC!!!
+S1.86: switched to candidate mode.
+S3.86: switched to follower mode.
+S3.87: switched to candidate mode.
+S1.86: switched to follower mode.
+S1.86: qualified for leader mode.
+S1.86: switched to leader mode.
+APPEND RPC!!!
+S3.87: qualified for leader mode.
+S3.87: switched to leader mode.
+S3.88: switched to candidate mode.
+S1.88: switched to follower mode.
+S3.88: qualified for leader mode.
+S3.88: switched to leader mode.
+S3.89: switched to candidate mode.
+S3.89: qualified for leader mode.
+S3.89: switched to leader mode.
+APPEND RPC!!!
+S1.90: switched to candidate mode.
+S3.90: switched to follower mode.
+S1.90: qualified for leader mode.
+S1.90: switched to leader mode.
+S1.91: switched to candidate mode.
+APPEND RPC!!!
+S1.92: switched to candidate mode.
+APPEND RPC!!!
+S1.92: qualified for leader mode.
+S1.92: switched to leader mode.
+S1.92: qualified for leader mode.
+APPEND RPC!!!
+S1.93: switched to candidate mode.
+S1.94: switched to candidate mode.
+S3.94: switched to candidate mode.
+S1.94: qualified for leader mode.
+S1.94: switched to leader mode.
+APPEND RPC!!!S1.94: qualified for leader mode.
+
+S3.94: qualified for leader mode.
+S3.94: switched to leader mode.
+S1.95: switched to candidate mode.
+APPEND RPC!!!
+S3.95: switched to follower mode.
+S1.95: qualified for leader mode.
+S1.95: switched to leader mode.
+S1.96: switched to candidate mode.
+S1.97: switched to candidate mode.
+APPEND RPC!!!
+S3.98: switched to candidate mode.
+S1.97: switched to follower mode.
+S1.98: switched to candidate mode.
+S1.98: qualified for leader mode.
+S1.98: switched to leader mode.
+S1.99: switched to candidate mode.
+S3.98: switched to follower mode.
+S1.99: qualified for leader mode.
+S1.99: qualified for leader mode.S3.99: switched to candidate mode.
+
+S3.99: qualified for leader mode.
+S3.99: switched to leader mode.
+S1.99: qualified for leader mode.
+S1.100: switched to candidate mode.
+S3.100: switched to follower mode.
+S3.101: switched to candidate mode.
+S3.101: qualified for leader mode.
+S3.101: switched to leader mode.
+S1.100: switched to follower mode.
+APPEND RPC!!!
+APPEND RPC!!!
+S1.101: switched to candidate mode.
+S1.101: qualified for leader mode.
+S1.101: switched to leader mode.
+S3.102: switched to candidate mode.
+S3.102: qualified for leader mode.
+S3.102: switched to leader mode.
+S1.102: switched to follower mode.
+S3.103: switched to candidate mode.
+S1.104: switched to candidate mode.
+S1.104: qualified for leader mode.
+S1.104: switched to leader mode.
+S3.103: qualified for leader mode.
+S1.105: switched to candidate mode.
+S1.105: qualified for leader mode.
+S1.105: switched to leader mode.
+S1.106: switched to candidate mode.
+APPEND RPC!!!
+S1.107: switched to candidate mode.
+S1.107: qualified for leader mode.
+S1.107: switched to leader mode.
+S1.108: switched to candidate mode.
+S1.108: qualified for leader mode.
+S1.108: switched to leader mode.
+APPEND RPC!!!
+S1.108: qualified for leader mode.
+S1.109: switched to candidate mode.
+S1.109: qualified for leader mode.
+S1.109: switched to leader mode.
+S1.110: switched to candidate mode.
+S1.110: qualified for leader mode.
+S1.110: switched to leader mode.
+S1.111: switched to candidate mode.
+S1.111: qualified for leader mode.
+S1.111: switched to leader mode.
+S1.112: switched to candidate mode.
+APPEND RPC!!!
+S1.112: qualified for leader mode.
+S1.112: switched to leader mode.
+S1.112: qualified for leader mode.
+APPEND RPC!!!
+APPEND RPC!!!
+APPEND RPC!!!
+APPEND RPC!!!
+S1.113: switched to candidate mode.
+APPEND RPC!!!
+APPEND RPC!!!
+S1.113: qualified for leader mode.
+S1.113: switched to leader mode.
+APPEND RPC!!!
+S1.114: switched to candidate mode.
+APPEND RPC!!!
+S1.114: qualified for leader mode.
+S1.114: switched to leader mode.
+S1.115: switched to candidate mode.
+APPEND RPC!!!
+S1.115: qualified for leader mode.
+S1.115: switched to leader mode.
+APPEND RPC!!!
+S1.116: switched to candidate mode.
+S1.116: qualified for leader mode.
+S1.116: switched to leader mode.
+S1.117: switched to candidate mode.
+S1.117: qualified for leader mode.
+S1.117: switched to leader mode.
+S1.118: switched to candidate mode.
+S1.118: qualified for leader mode.
+S1.118: switched to leader mode.
+APPEND RPC!!!
+APPEND RPC!!!
+APPEND RPC!!!
+APPEND RPC!!!
+S1.119: switched to candidate mode.
+S1.119: qualified for leader mode.
+S1.119: switched to leader mode.
+S1.120: switched to candidate mode.
+S1.120: qualified for leader mode.
+S1.120: switched to leader mode.
+S1.121: switched to candidate mode.
+S1.121: qualified for leader mode.
+S1.121: switched to leader mode.
+APPEND RPC!!!
+APPEND RPC!!!
+APPEND RPC!!!

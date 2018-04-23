@@ -29,22 +29,16 @@ public class FollowerMode extends RaftMode {
       if(candidateTerm < term) {
 	mConfig.setCurrentTerm(term, 0);
 	return term;
-      }
-      else if(candidateTerm > term) {
-	// additional shit
-	mConfig.setCurrentTerm(candidateTerm, candidateID); 
-	resetTimer(); // might have to reset with different period
-	return 0;
-      } else {
-	if(votedFor == 0) {
-	  // also additional shit
-	  mConfig.setCurrentTerm(candidateTerm, candidateID);
-	  resetTimer();
-	  return 0;
-	} else {
-	  mConfig.setCurrentTerm(candidateTerm, 0);
-	  return term;
-	}
+      } else { // candidateTerm >= term
+	if(votedFor == 0 || votedFor == candidateID) {
+	  if(mLog.getLastTerm() <= lastLogTerm && mLog.getLastIndex() <= lastLogIndex) {
+	    mConfig.setCurrentTerm(candidateTerm, candidateID);
+	    resetTimer();
+	    return 0;
+	  } 
+	} 
+	mConfig.setCurrentTerm(candidateTerm, 0);
+	return term;
       }
     }
   }
@@ -64,17 +58,20 @@ public class FollowerMode extends RaftMode {
 			    Entry[] entries,
 			    int leaderCommit) {
     synchronized (mLock) {
-      int term = mConfig.getCurrentTerm ();
-      int result = term;
-      if(entries.length == 0) resetTimer();
-      return result;
+      int term = mConfig.getCurrentTerm();
+      if(term > leaderTerm) return term;
+      if(entries == null) { resetTimer(); return term; }
+      int res = mLog.insert(entries, prevLogIndex, prevLogTerm); // condition checks done by mLog
+      if(res < 0) return term; 
+      if(leaderCommit > mCommitIndex) mCommitIndex = Math.min(leaderCommit, res); 
+      return 0;
     }
   }  
 
   // @param id of the timer that timed out
   public void handleTimeout (int timerID) {
     synchronized (mLock) {
-      System.out.println("HANDLE TIMEOUT TIMER ID: " + timerID);
+      if(mCommitIndex > mLastApplied) mCommitIndex = mLastApplied;
       heartBeatTimer.cancel();
       RaftServerImpl.setMode(new CandidateMode());
     }

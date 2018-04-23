@@ -68,10 +68,13 @@ public class CandidateMode extends RaftMode {
   // @param id of the timer that timed out
   public void handleTimeout (int timerID) {
     synchronized (mLock) {
+      if(mCommitIndex > mLastApplied) mCommitIndex = mLastApplied;
       if(timerID == POLLING_TIMER_C+mID) { // poll vote status
 	int[] votes = RaftResponses.getVotes(mConfig.getCurrentTerm());
+	if(votes == null) return; // term obsolete
+
 	int nYes = 1;
-	for(int i = 0 ; i < votes.length ; i ++) if(votes[i] == 0) nYes ++;
+	for(int i = 1 ; i < votes.length ; i ++) if(votes[i] == 0) nYes ++;
 	if(nYes > mConfig.getNumServers()/2) {
 	  pollingTimer.cancel();
 	  electionTimer.cancel();
