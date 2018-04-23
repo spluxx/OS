@@ -8,7 +8,7 @@ public class FollowerMode extends RaftMode {
   public void go () {
     synchronized (mLock) {
       resetTimer();
-      System.out.println ("S" + mID + "." + mConfig.getCurrentTerm() + ": switched to follower mode.");
+      System.out.println ("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": switched to follower mode.");
     }
   }
   
@@ -28,15 +28,20 @@ public class FollowerMode extends RaftMode {
       // no log
       if(candidateTerm < term) {
 	mConfig.setCurrentTerm(term, 0);
+	System.out.println ("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": VOTE FOR " + candidateID + " REJECTED - term " + candidateTerm + " vs " + term);
 	return term;
       } else { // candidateTerm >= term
 	if(votedFor == 0 || votedFor == candidateID) {
 	  if(mLog.getLastTerm() <= lastLogTerm && mLog.getLastIndex() <= lastLogIndex) {
+	    System.out.println ("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": VOTED FOR " + candidateID);
 	    mConfig.setCurrentTerm(candidateTerm, candidateID);
 	    resetTimer();
 	    return 0;
 	  } 
-	} 
+	  System.out.println ("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": VOTE FOR " + candidateID + " REJECTED - (logIndex, logTerm) => (" +lastLogIndex+", " + lastLogTerm+"), (" + mLog.getLastIndex() +"," + mLog.getLastTerm()+")");
+	}  else {
+	  System.out.println ("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": VOTE FOR " + candidateID + " REJECTED - votedfor " + votedFor);
+	}
 	mConfig.setCurrentTerm(candidateTerm, 0);
 	return term;
       }
@@ -58,12 +63,14 @@ public class FollowerMode extends RaftMode {
 			    Entry[] entries,
 			    int leaderCommit) {
     synchronized (mLock) {
+      System.out.println ("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": APPEND");
       int term = mConfig.getCurrentTerm();
       if(term > leaderTerm) return term;
-      if(entries == null) { resetTimer(); return term; }
+      resetTimer();
       int res = mLog.insert(entries, prevLogIndex, prevLogTerm); // condition checks done by mLog
       if(res < 0) return term; 
       if(leaderCommit > mCommitIndex) mCommitIndex = Math.min(leaderCommit, res); 
+      System.out.println("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": SUCCESS! with logidx, term" + prevLogIndex + ", " + prevLogTerm);
       return 0;
     }
   }  
@@ -78,12 +85,13 @@ public class FollowerMode extends RaftMode {
   }
 
   private void resetTimer() {
-      int period = 0;
-      if(mConfig.getTimeoutOverride() < 0)
-	period = ThreadLocalRandom.current().nextInt(
-	    RaftMode.ELECTION_TIMEOUT_MIN, RaftMode.ELECTION_TIMEOUT_MAX);
-      else period = mConfig.getTimeoutOverride();
-      heartBeatTimer = super.scheduleTimer(period, mID);
+    if(heartBeatTimer != null) heartBeatTimer.cancel();
+    int period = 0;
+    if(mConfig.getTimeoutOverride() < 0)
+      period = ThreadLocalRandom.current().nextInt(
+          RaftMode.ELECTION_TIMEOUT_MIN, RaftMode.ELECTION_TIMEOUT_MAX);
+    else period = mConfig.getTimeoutOverride();
+    System.out.println ("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": TIMER RESET " + period);
+    heartBeatTimer = super.scheduleTimer(period, mID);
   }
-}
-
+} 

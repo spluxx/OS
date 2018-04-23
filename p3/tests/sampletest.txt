@@ -7,7 +7,7 @@ NUM_SERVERS=3
 start_servers $NUM_SERVERS
 
 # wait for S3 to become leader
-sleep 2
+sleep 5
 
 # pause S3
 pause_server 3

@@ -11,7 +11,7 @@ public class CandidateMode extends RaftMode {
     synchronized (mLock) {
       doYourStuff();
       resetTimer();
-      System.out.println ("S" + mID + "." + mConfig.getCurrentTerm() + ": switched to candidate mode.");
+      System.out.println ("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": switched to candidate mode.");
     }
   }
 
@@ -78,7 +78,7 @@ public class CandidateMode extends RaftMode {
 	if(nYes > mConfig.getNumServers()/2) {
 	  pollingTimer.cancel();
 	  electionTimer.cancel();
-	  System.out.println ("S" + mID + "." + mConfig.getCurrentTerm() + ": qualified for leader mode.");
+	  System.out.println ("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": qualified for leader mode.");
 	  RaftServerImpl.setMode(new LeaderMode());
 	}
       } else go(); // election finished without winner
