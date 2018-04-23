@@ -5,9 +5,7 @@ import java.util.Timer;
 public class LeaderMode extends RaftMode {
   private int nextIndex[];
   private int matchIndex[];
-  private Timer heartbeatTimer, pollingTimer;
-  private final int POLLING_INTERVAL = 30;
-  private final int POLLING_C = 100007;
+  private Timer heartbeatTimer;
 
   public void go () {
     synchronized (mLock) {
@@ -15,6 +13,7 @@ public class LeaderMode extends RaftMode {
       nextIndex = new int[mConfig.getNumServers()+1];
       matchIndex = new int[mConfig.getNumServers()+1];
       for(int i = 0 ; i < nextIndex.length ; i ++) nextIndex[i] = mLog.getLastIndex()+1;
+      RaftResponses.setTerm(mConfig.getCurrentTerm());
       for(int i = 1 ; i <= mConfig.getNumServers() ; i ++) remoteAppendEntries(i);
       resetTimer();
     }
@@ -68,57 +67,63 @@ public class LeaderMode extends RaftMode {
   }
 
   private void remoteAppendEntries(int idx) {
-    if(idx == mID) return;
-    int term = mConfig.getCurrentTerm();
-    int prevLogIndex = nextIndex[idx]-1;
-    int prevLogTerm = prevLogIndex < 0 ? 0 : mLog.getEntry(nextIndex[idx]-1).term;
-    Entry entries[] = new Entry[mLog.getLastIndex()-prevLogIndex];
-    for(int i = prevLogIndex+1 ; i <= mLog.getLastIndex() ; i ++) {
-      entries[i-prevLogIndex-1] = mLog.getEntry(i);
+    synchronized (mLock) {
+      if(idx == mID) return;
+      int term = mConfig.getCurrentTerm();
+      int prevLogIndex = nextIndex[idx]-1;
+      int prevLogTerm = prevLogIndex < 0 ? 0 : mLog.getEntry(nextIndex[idx]-1).term;
+      Entry entries[] = new Entry[mLog.getLastIndex()-prevLogIndex];
+      for(int i = prevLogIndex+1 ; i <= mLog.getLastIndex() ; i ++) {
+        entries[i-prevLogIndex-1] = mLog.getEntry(i);
+      }
+      remoteAppendEntries(idx, term, mID, prevLogIndex, prevLogTerm, entries, mCommitIndex);
     }
-    remoteAppendEntries(idx, term, mID, prevLogIndex, prevLogTerm, entries, mCommitIndex);
   }
 
   private void resetTimer() {
-    if(heartbeatTimer != null) heartbeatTimer.cancel();
-    if(pollingTimer != null) pollingTimer.cancel();
-    heartbeatTimer = super.scheduleTimer(HEARTBEAT_INTERVAL, mID);
-    pollingTimer = super.scheduleTimer(POLLING_INTERVAL, mID+POLLING_C);
+    synchronized (mLock) {
+      if(heartbeatTimer != null) heartbeatTimer.cancel();
+      heartbeatTimer = super.scheduleTimer(HEARTBEAT_INTERVAL, mID);
+    }
   }
 
   // @param id of the timer that timed out
   public void handleTimeout (int timerID) {
+      System.out.println (System.currentTimeMillis()%10000 + "("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": TIMER " + timerID);
+      System.out.println("nServers: " + mConfig.getNumServers());
     synchronized (mLock) {
       if(mCommitIndex > mLastApplied) mLastApplied = mCommitIndex;
       int nServers = mConfig.getNumServers();
       int curTerm = mConfig.getCurrentTerm();
-
-      if(timerID == POLLING_C+mID) { // process responses
-	int[] responses = RaftResponses.getAppendResponses(curTerm);
-	if(responses == null)  return;
-	for(int i = 1 ; i <= nServers ; i ++) {
-	  if(responses[i] < 0) continue;
-	  else if(responses[i] == 0) { // YES!
-	    System.out.println("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ":" + "SERVER " + i + "returned 0 to appendRPC");
-	    matchIndex[i] = mLog.getLastIndex(); 
-	    nextIndex[i] = mLog.getLastIndex() + 1;
-	  } else { // NO!
-	    System.out.println("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ":SERVER "+ i + "returned its term to appendRPC");
-	    if(responses[i] > curTerm) { // STEP DOWN!
-	      mConfig.setCurrentTerm(responses[i], 0); 
-	      heartbeatTimer.cancel();
-	      RaftServerImpl.setMode(new FollowerMode());
-	      return;
-	    } else nextIndex[i] --;
+      for(int i = 1 ; i <= nServers ; i ++) remoteAppendEntries(i); // boong boong
+      int[] responses = RaftResponses.getAppendResponses(curTerm);
+      if(responses == null)  return;
+      for(int i = 1 ; i <= nServers ; i ++) {
+        if(responses[i] < 0) continue;
+        else if(responses[i] == 0) { // YES!
+          System.out.println("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ":" + "SERVER " + i + " returned 0 to appendRPC");
+          matchIndex[i] = mLog.getLastIndex(); 
+          nextIndex[i] = mLog.getLastIndex() + 1;
+        } else { // NO!
+          System.out.println("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ":SERVER "+ i + " returned its term to appendRPC");
+          if(responses[i] > curTerm) { // STEP DOWN!
+            mConfig.setCurrentTerm(responses[i], 0); 
+            heartbeatTimer.cancel();
+            RaftServerImpl.setMode(new FollowerMode());
+            return;
+          } else {
+	    nextIndex[i] --; // try again next time
+	    System.out.println("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": TRY AGAIN FOR SERVER " + i + " LATER WITH " + nextIndex[i]);
 	  }
-	}
-	for(int i = mCommitIndex+1 ; i <= mLog.getLastIndex() ; i ++) {
-	  int cnt = 0;
-	  for(int j = 1 ; j <= mConfig.getNumServers() ; j ++) cnt += i <= matchIndex[j] ? 1 : 0;
-	  if(cnt > mConfig.getNumServers()/2 && mLog.getEntry(i).term == curTerm) mCommitIndex = i;
-	}
-	RaftResponses.clearAppendResponses(curTerm);
-      } else for(int i = 1 ; i <= nServers ; i ++) remoteAppendEntries(i); // boong boong
+        }
+      }
+      //for(int i = mCommitIndex+1 ; i <= mLog.getLastIndex() ; i ++) {
+      //  int cnt = 0;
+      //  for(int j = 1 ; j <= mConfig.getNumServers() ; j ++) cnt += i <= matchIndex[j] ? 1 : 0;
+      //  if(cnt > mConfig.getNumServers()/2 && mLog.getEntry(i).term == curTerm) mCommitIndex = i;
+      //}
+      System.out.println("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ":RPC DONE");
+      resetTimer();
     }  
   }
 }

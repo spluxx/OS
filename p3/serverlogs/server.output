@@ -1,299 +1,370 @@
-TIME_TO_SIMULATE=15
+TIME_TO_SIMULATE=10
 S3.1: Log { (1 1) }
-S2.1: Log { (1 1) }
 S1.1: Log { (1 1) }
-(FollowerMode)S2.1: TIMER RESET 600
-(FollowerMode)S2.1: switched to follower mode.
+S2.1: Log { (1 1) }
 (FollowerMode)S1.1: TIMER RESET 1200
 (FollowerMode)S1.1: switched to follower mode.
+(FollowerMode)S2.1: TIMER RESET 600
+(FollowerMode)S2.1: switched to follower mode.
+9550(FollowerMode)S2.1: TIMER 2
 (CandidateMode)S2.2: switched to candidate mode.
 (FollowerMode)S1.1: VOTED FOR 2
 (FollowerMode)S1.2: TIMER RESET 1200
+9631(CandidateMode)S2.2: TIMER 10009
 (CandidateMode)S2.2: qualified for leader mode.
 (LeaderMode)S2.2: switched to leader mode.
 (FollowerMode)S1.2: APPEND
 (FollowerMode)S1.2: TIMER RESET 1200
 (FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
-(LeaderMode)S2.2:SERVER 1returned 0 to appendRPC
+9713(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
 (FollowerMode)S1.2: APPEND
 (FollowerMode)S1.2: TIMER RESET 1200
 (FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
-(FollowerMode)S3.1: TIMER RESET 300
-(FollowerMode)S3.1: switched to follower mode.
-(CandidateMode)S3.2: switched to candidate mode.
-(FollowerMode)S1.2: VOTE FOR 3 REJECTED - votedfor 2
-(CandidateMode)S3.3: switched to candidate mode.
-(FollowerMode)S1.2: VOTE FOR 3 REJECTED - votedfor 2
-(FollowerMode)S2.3: TIMER RESET 600
-(FollowerMode)S2.3: switched to follower mode.
-(CandidateMode)S3.3: qualified for leader mode.
-(LeaderMode)S3.3: switched to leader mode.
-(FollowerMode)S1.3: APPEND
-(FollowerMode)S2.3: APPEND(FollowerMode)S1.3: TIMER RESET 1200
-
-(FollowerMode)S2.3: TIMER RESET 600
-(FollowerMode)S1.3: SUCCESS! with logidx, term0, 1
-(FollowerMode)S2.3: SUCCESS! with logidx, term0, 1
-(LeaderMode)S3.3:SERVER 1returned 0 to appendRPC
-(LeaderMode)S3.3:SERVER 2returned 0 to appendRPC
-(FollowerMode)S2.3: APPEND(FollowerMode)S1.3: APPEND
-
-(FollowerMode)S2.3: TIMER RESET 600(FollowerMode)S1.3: TIMER RESET 1200
-
-(FollowerMode)S2.3: SUCCESS! with logidx, term0, 1
-(FollowerMode)S1.3: SUCCESS! with logidx, term0, 1
-(CandidateMode)S1.4: switched to candidate mode.
-(FollowerMode)S3.4: TIMER RESET 300
-(FollowerMode)S3.4: switched to follower mode.
-(CandidateMode)S1.4: qualified for leader mode.
-(LeaderMode)S1.4: switched to leader mode.
-(FollowerMode)S3.4: APPEND
-(FollowerMode)S3.4: TIMER RESET 300
-(FollowerMode)S3.4: SUCCESS! with logidx, term0, 1
-(LeaderMode)S1.4:SERVER 3returned 0 to appendRPC
-(FollowerMode)S3.4: APPEND
-(FollowerMode)S3.4: TIMER RESET 300
-(FollowerMode)S3.4: SUCCESS! with logidx, term0, 1
-S2.3: Log { (1 1) }
-(CandidateMode)S3.5: switched to candidate mode.
-(FollowerMode)S1.5: TIMER RESET 1200
-(FollowerMode)S1.5: switched to follower mode.
-(CandidateMode)S3.5: qualified for leader mode.
-(LeaderMode)S3.5: switched to leader mode.
-(FollowerMode)S1.5: APPEND
-(FollowerMode)S1.5: TIMER RESET 1200
-(FollowerMode)S1.5: SUCCESS! with logidx, term0, 1
-(LeaderMode)S3.5:SERVER 1returned 0 to appendRPC
-(LeaderMode)S3.5:SERVER 2returned 0 to appendRPC
-(FollowerMode)S1.5: APPEND
-(FollowerMode)S1.5: TIMER RESET 1200
-(FollowerMode)S1.5: SUCCESS! with logidx, term0, 1
-(CandidateMode)S1.6: switched to candidate mode.
-(FollowerMode)S3.6: TIMER RESET 300
-(FollowerMode)S3.6: switched to follower mode.
-(CandidateMode)S1.6: qualified for leader mode.
-(LeaderMode)S1.6: switched to leader mode.
-(FollowerMode)S3.6: APPEND
-(FollowerMode)S3.6: TIMER RESET 300
-(FollowerMode)S3.6: SUCCESS! with logidx, term0, 1
-(LeaderMode)S1.6:SERVER 3returned 0 to appendRPC
-(FollowerMode)S3.6: APPEND
-(FollowerMode)S3.6: TIMER RESET 300
-(FollowerMode)S3.6: SUCCESS! with logidx, term0, 1
-(CandidateMode)S3.7: switched to candidate mode.
-(FollowerMode)S1.7: TIMER RESET 1200
-(FollowerMode)S1.7: switched to follower mode.
-(CandidateMode)S3.7: qualified for leader mode.
-(LeaderMode)S3.7: switched to leader mode.
-(FollowerMode)S1.7: APPEND
-(FollowerMode)S1.7: TIMER RESET 1200
-(FollowerMode)S1.7: SUCCESS! with logidx, term0, 1
-(LeaderMode)S3.7:SERVER 1returned 0 to appendRPC
-(FollowerMode)S1.7: APPEND
-(FollowerMode)S1.7: TIMER RESET 1200
-(FollowerMode)S1.7: SUCCESS! with logidx, term0, 1
-(CandidateMode)S1.8: switched to candidate mode.
-(FollowerMode)S3.8: TIMER RESET 300
-(FollowerMode)S3.8: switched to follower mode.
-(CandidateMode)S1.8: qualified for leader mode.
-(LeaderMode)S1.8: switched to leader mode.
-(FollowerMode)S3.8: APPEND
-(FollowerMode)S3.8: TIMER RESET 300
-(FollowerMode)S3.8: SUCCESS! with logidx, term0, 1
-(LeaderMode)S1.8:SERVER 3returned 0 to appendRPC
-(FollowerMode)S3.8: APPEND
-(FollowerMode)S3.8: TIMER RESET 300
-(FollowerMode)S3.8: SUCCESS! with logidx, term0, 1
-(CandidateMode)S3.9: switched to candidate mode.
-(FollowerMode)S1.9: TIMER RESET 1200
-(FollowerMode)S1.9: switched to follower mode.
-(CandidateMode)S3.9: qualified for leader mode.
-(LeaderMode)S3.9: switched to leader mode.
-(FollowerMode)S1.9: APPEND
-(FollowerMode)S1.9: TIMER RESET 1200
-(FollowerMode)S1.9: SUCCESS! with logidx, term0, 1
-(LeaderMode)S3.9:SERVER 1returned 0 to appendRPC
-(FollowerMode)S1.9: APPEND
-(FollowerMode)S1.9: TIMER RESET 1200
-(FollowerMode)S1.9: SUCCESS! with logidx, term0, 1
-(CandidateMode)S1.10: switched to candidate mode.
-(FollowerMode)S3.10: TIMER RESET 300
-(FollowerMode)S3.10: switched to follower mode.
-(CandidateMode)S1.10: qualified for leader mode.
-(LeaderMode)S1.10: switched to leader mode.
-(FollowerMode)S3.10: APPEND
-(FollowerMode)S3.10: TIMER RESET 300
-(FollowerMode)S3.10: SUCCESS! with logidx, term0, 1
-(FollowerMode)S2.3: TIMER RESET 600
-(FollowerMode)S2.3: switched to follower mode.
-(LeaderMode)S1.10:SERVER 3returned 0 to appendRPC
-(FollowerMode)S3.10: APPEND
-(FollowerMode)S3.10: TIMER RESET 300
-(FollowerMode)S2.3: APPEND
-(FollowerMode)S2.3: TIMER RESET 600
-(FollowerMode)S3.10: SUCCESS! with logidx, term0, 1
-(FollowerMode)S2.3: SUCCESS! with logidx, term0, 1
-(CandidateMode)S3.11: switched to candidate mode.
-(FollowerMode)S1.11: TIMER RESET 1200
-(FollowerMode)S1.11: switched to follower mode.
-(FollowerMode)S2.3: VOTED FOR 3
-(FollowerMode)S2.11: TIMER RESET 600
-(CandidateMode)S3.11: qualified for leader mode.
-(LeaderMode)S3.11: switched to leader mode.
-(FollowerMode)S1.11: APPEND
-(FollowerMode)S1.11: TIMER RESET 1200
-(FollowerMode)S2.11: APPEND
-(FollowerMode)S2.11: TIMER RESET 600
-(FollowerMode)S2.11: SUCCESS! with logidx, term0, 1
-(FollowerMode)S1.11: SUCCESS! with logidx, term0, 1
-(LeaderMode)S3.11:SERVER 1returned 0 to appendRPC
-(LeaderMode)S3.11:SERVER 2returned 0 to appendRPC
-(FollowerMode)S2.11: APPEND
-(FollowerMode)S2.11: TIMER RESET 600
-(FollowerMode)S1.11: APPEND
-(FollowerMode)S1.11: TIMER RESET 1200
-(FollowerMode)S2.11: SUCCESS! with logidx, term0, 1
-(FollowerMode)S1.11: SUCCESS! with logidx, term0, 1
-(CandidateMode)S2.12: switched to candidate mode.
-(FollowerMode)S1.11: VOTE FOR 2 REJECTED - votedfor 3
-(FollowerMode)S3.12: TIMER RESET 300
-(FollowerMode)S3.12: switched to follower mode.
-(CandidateMode)S2.12: qualified for leader mode.
-(LeaderMode)S2.12: switched to leader mode.
-(FollowerMode)S1.12: APPEND
-(FollowerMode)S3.12: APPEND(FollowerMode)S1.12: TIMER RESET 1200
-(FollowerMode)S3.12: TIMER RESET 300
-
-(FollowerMode)S3.12: SUCCESS! with logidx, term0, 1
-(FollowerMode)S1.12: SUCCESS! with logidx, term0, 1
-(LeaderMode)S2.12:SERVER 1returned 0 to appendRPC
-(LeaderMode)S2.12:SERVER 3returned 0 to appendRPC
-(FollowerMode)S1.12: APPEND(FollowerMode)S3.12: APPEND
-
-(FollowerMode)S1.12: TIMER RESET 1200
-(FollowerMode)S3.12: TIMER RESET 300
-(FollowerMode)S1.12: SUCCESS! with logidx, term0, 1
-(FollowerMode)S3.12: SUCCESS! with logidx, term0, 1
-(CandidateMode)S3.13: switched to candidate mode.
-(FollowerMode)S1.12: VOTED FOR 3
-(FollowerMode)S1.13: TIMER RESET 1200
-(FollowerMode)S2.13: TIMER RESET 600
-(FollowerMode)S2.13: switched to follower mode.
-(CandidateMode)S3.13: qualified for leader mode.
-(LeaderMode)S3.13: switched to leader mode.
-(FollowerMode)S1.13: APPEND
-(FollowerMode)S2.13: APPEND(FollowerMode)S1.13: TIMER RESET 1200
-
-(FollowerMode)S2.13: TIMER RESET 600
-(FollowerMode)S1.13: SUCCESS! with logidx, term0, 1
-(FollowerMode)S2.13: SUCCESS! with logidx, term0, 1
-(LeaderMode)S3.13:SERVER 1returned 0 to appendRPC
-(LeaderMode)S3.13:SERVER 2returned 0 to appendRPC
-(FollowerMode)S2.13: APPEND
-(FollowerMode)S2.13: TIMER RESET 600
-(FollowerMode)S1.13: APPEND
-(FollowerMode)S1.13: TIMER RESET 1200
-(FollowerMode)S1.13: SUCCESS! with logidx, term0, 1
-(FollowerMode)S2.13: SUCCESS! with logidx, term0, 1
-(CandidateMode)S2.14: switched to candidate mode.
-(FollowerMode)S1.13: VOTE FOR 2 REJECTED - votedfor 3
-(FollowerMode)S3.14: TIMER RESET 300
-(FollowerMode)S3.14: switched to follower mode.
-(CandidateMode)S2.14: qualified for leader mode.
-(LeaderMode)S2.14: switched to leader mode.
-(FollowerMode)S3.14: APPEND
-(FollowerMode)S3.14: TIMER RESET 300
-(FollowerMode)S1.14: APPEND
-(FollowerMode)S1.14: TIMER RESET 1200
-(FollowerMode)S3.14: SUCCESS! with logidx, term0, 1
-(FollowerMode)S1.14: SUCCESS! with logidx, term0, 1
-(LeaderMode)S2.14:SERVER 1returned 0 to appendRPC
-(LeaderMode)S2.14:SERVER 3returned 0 to appendRPC
-(FollowerMode)S1.14: APPEND
-(FollowerMode)S1.14: TIMER RESET 1200
-(FollowerMode)S3.14: APPEND
-(FollowerMode)S3.14: TIMER RESET 300
-(FollowerMode)S3.14: SUCCESS! with logidx, term0, 1
-(FollowerMode)S1.14: SUCCESS! with logidx, term0, 1
-(CandidateMode)S3.15: switched to candidate mode.
-(FollowerMode)S1.14: VOTED FOR 3
-(FollowerMode)S1.15: TIMER RESET 1200(FollowerMode)S2.15: TIMER RESET 600
-
-(FollowerMode)S2.15: switched to follower mode.
-(CandidateMode)S3.15: qualified for leader mode.
-(LeaderMode)S3.15: switched to leader mode.
-(FollowerMode)S1.15: APPEND
-(FollowerMode)S2.15: APPEND(FollowerMode)S1.15: TIMER RESET 1200
-
-(FollowerMode)S2.15: TIMER RESET 600
-(FollowerMode)S2.15: SUCCESS! with logidx, term0, 1
-(FollowerMode)S1.15: SUCCESS! with logidx, term0, 1
-(LeaderMode)S3.15:SERVER 1returned 0 to appendRPC
-(LeaderMode)S3.15:SERVER 2returned 0 to appendRPC
-(FollowerMode)S1.15: APPEND(FollowerMode)S2.15: APPEND
-
-(FollowerMode)S1.15: TIMER RESET 1200(FollowerMode)S2.15: TIMER RESET 600
-
-(FollowerMode)S2.15: SUCCESS! with logidx, term0, 1
-(FollowerMode)S1.15: SUCCESS! with logidx, term0, 1
-(CandidateMode)S2.16: switched to candidate mode.
-(FollowerMode)S1.15: VOTE FOR 2 REJECTED - votedfor 3
-(FollowerMode)S3.16: TIMER RESET 300
-(FollowerMode)S3.16: switched to follower mode.
-(CandidateMode)S2.16: qualified for leader mode.
-(LeaderMode)S2.16: switched to leader mode.
-(FollowerMode)S1.16: APPEND
-(FollowerMode)S1.16: TIMER RESET 1200
-(FollowerMode)S1.16: SUCCESS! with logidx, term0, 1
-(FollowerMode)S3.16: APPEND
-(FollowerMode)S3.16: TIMER RESET 300
-(FollowerMode)S3.16: SUCCESS! with logidx, term0, 1
-(LeaderMode)S2.16:SERVER 1returned 0 to appendRPC
-(LeaderMode)S2.16:SERVER 3returned 0 to appendRPC
-(FollowerMode)S1.16: APPEND(FollowerMode)S3.16: APPEND
-
-(FollowerMode)S3.16: TIMER RESET 300
-(FollowerMode)S1.16: TIMER RESET 1200
-(FollowerMode)S3.16: SUCCESS! with logidx, term0, 1
-(FollowerMode)S1.16: SUCCESS! with logidx, term0, 1
-(CandidateMode)S3.17: switched to candidate mode.
-(FollowerMode)S1.16: VOTED FOR 3
-(FollowerMode)S2.17: TIMER RESET 600(FollowerMode)S1.17: TIMER RESET 1200
-
-(FollowerMode)S2.17: switched to follower mode.
-(CandidateMode)S3.17: qualified for leader mode.
-(LeaderMode)S3.17: switched to leader mode.
-(FollowerMode)S1.17: APPEND(FollowerMode)S2.17: APPEND
-
-(FollowerMode)S2.17: TIMER RESET 600
-(FollowerMode)S1.17: TIMER RESET 1200
-(FollowerMode)S2.17: SUCCESS! with logidx, term0, 1
-(FollowerMode)S1.17: SUCCESS! with logidx, term0, 1
-(LeaderMode)S3.17:SERVER 1returned 0 to appendRPC
-(LeaderMode)S3.17:SERVER 2returned 0 to appendRPC
-(FollowerMode)S2.17: APPEND
-(FollowerMode)S1.17: APPEND(FollowerMode)S2.17: TIMER RESET 600
-(FollowerMode)S1.17: TIMER RESET 1200
-
-(FollowerMode)S1.17: SUCCESS! with logidx, term0, 1
-(FollowerMode)S2.17: SUCCESS! with logidx, term0, 1
-(CandidateMode)S2.18: switched to candidate mode.
-(FollowerMode)S1.17: VOTE FOR 2 REJECTED - votedfor 3
-(FollowerMode)S3.18: TIMER RESET 300
-(FollowerMode)S3.18: switched to follower mode.
-(CandidateMode)S2.18: qualified for leader mode.
-(LeaderMode)S2.18: switched to leader mode.
-(FollowerMode)S3.18: APPEND
-(FollowerMode)S3.18: TIMER RESET 300
-(FollowerMode)S1.18: APPEND
-(FollowerMode)S1.18: TIMER RESET 1200
-(FollowerMode)S3.18: SUCCESS! with logidx, term0, 1
-(FollowerMode)S1.18: SUCCESS! with logidx, term0, 1
-(LeaderMode)S2.18:SERVER 1returned 0 to appendRPC
-(LeaderMode)S2.18:SERVER 3returned 0 to appendRPC
-(FollowerMode)S1.18: APPEND
-(FollowerMode)S1.18: TIMER RESET 1200
-(FollowerMode)S3.18: APPEND
-(FollowerMode)S3.18: TIMER RESET 300
-(FollowerMode)S1.18: SUCCESS! with logidx, term0, 1
-(FollowerMode)S3.18: SUCCESS! with logidx, term0, 1
+9792(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+9871(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+9952(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+29(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+106(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+188(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+269(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+345(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+426(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+502(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+580(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+658(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+736(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+818(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+899(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+976(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+1053(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+1129(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+1209(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+1290(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+1370(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+1450(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+1527(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+1608(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+1687(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+1765(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+1841(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+1925(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+2004(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+2081(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+2160(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+2239(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+2318(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+2400(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+2482(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+2560(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+2639(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+2718(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+2799(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+2881(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+2959(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+3039(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+3117(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+3194(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+3271(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+3347(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+3425(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+3506(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+3588(LeaderMode)S2.2: TIMER 2
+nServers: 3
+(LeaderMode)S2.2:SERVER 1 returned 0 to appendRPC
+(LeaderMode)S2.2:RPC DONE
+(FollowerMode)S1.2: APPEND
+(FollowerMode)S1.2: TIMER RESET 1200
+(FollowerMode)S1.2: SUCCESS! with logidx, term0, 1
+3665(LeaderMode)S2.2: TIMER 2
+nServers: 3

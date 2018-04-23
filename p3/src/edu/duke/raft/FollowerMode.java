@@ -67,6 +67,7 @@ public class FollowerMode extends RaftMode {
       int term = mConfig.getCurrentTerm();
       if(term > leaderTerm) return term;
       resetTimer();
+      mConfig.setCurrentTerm(leaderTerm, mConfig.getVotedFor());
       int res = mLog.insert(entries, prevLogIndex, prevLogTerm); // condition checks done by mLog
       if(res < 0) return term; 
       if(leaderCommit > mCommitIndex) mCommitIndex = Math.min(leaderCommit, res); 
@@ -77,6 +78,8 @@ public class FollowerMode extends RaftMode {
 
   // @param id of the timer that timed out
   public void handleTimeout (int timerID) {
+     System.out.println (System.currentTimeMillis()%10000 + "("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": TIMER " + timerID);
+
     synchronized (mLock) {
       if(mCommitIndex > mLastApplied) mCommitIndex = mLastApplied;
       heartBeatTimer.cancel();
@@ -88,8 +91,7 @@ public class FollowerMode extends RaftMode {
     if(heartBeatTimer != null) heartBeatTimer.cancel();
     int period = 0;
     if(mConfig.getTimeoutOverride() < 0)
-      period = ThreadLocalRandom.current().nextInt(
-          RaftMode.ELECTION_TIMEOUT_MIN, RaftMode.ELECTION_TIMEOUT_MAX);
+      period = ThreadLocalRandom.current().nextInt(RaftMode.ELECTION_TIMEOUT_MIN, RaftMode.ELECTION_TIMEOUT_MAX);
     else period = mConfig.getTimeoutOverride();
     System.out.println ("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": TIMER RESET " + period);
     heartBeatTimer = super.scheduleTimer(period, mID);

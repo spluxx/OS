@@ -3,8 +3,9 @@ import java.util.Timer;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class CandidateMode extends RaftMode {
+  private boolean over;
   private Timer electionTimer, pollingTimer;
-  private static int POLLING_INTERVAL = 30;
+  private static int POLLING_INTERVAL = 70;
   private static int POLLING_TIMER_C = 10007;
 
   public void go () {
@@ -16,11 +17,13 @@ public class CandidateMode extends RaftMode {
   }
 
   private void doYourStuff() {
-    mConfig.setCurrentTerm(mConfig.getCurrentTerm()+1, mID);
-    RaftResponses.setTerm(mConfig.getCurrentTerm());
+    int t = mConfig.getCurrentTerm();
+    over = false;
+    mConfig.setCurrentTerm(t+1, mID);
+    RaftResponses.setTerm(t+1);
     for(int i = 1 ; i <= mConfig.getNumServers() ; i ++) {
       if(mID == i) continue;
-      remoteRequestVote(i, mConfig.getCurrentTerm(), mID, mLog.getLastIndex(), mLog.getLastTerm());
+      remoteRequestVote(i, t+1, mID, mLog.getLastIndex(), mLog.getLastTerm());
     }
   }
 
@@ -37,9 +40,10 @@ public class CandidateMode extends RaftMode {
     synchronized (mLock) {
       int term = mConfig.getCurrentTerm ();
       if(term < candidateTerm) { // to follower
+	pollingTimer.cancel();
+	electionTimer.cancel();
 	RaftServerImpl.setMode(new FollowerMode());
-	return 0;
-      } return term;
+      } return term; // I voted for myself anyways so ...
     }
   }
   
@@ -58,15 +62,20 @@ public class CandidateMode extends RaftMode {
 			    int prevLogTerm,
 			    Entry[] entries,
 			    int leaderCommit) {
-    synchronized (mLock) {
+    synchronized (mLock) { // might have to handle the case when it does have to append entries
       int term = mConfig.getCurrentTerm ();
-      int result = term;
-      return result;
+      if(term < leaderTerm) {
+	pollingTimer.cancel();
+	electionTimer.cancel();
+	RaftServerImpl.setMode(new FollowerMode());
+      } return term; // 
     }
   }
 
   // @param id of the timer that timed out
   public void handleTimeout (int timerID) {
+    System.out.println (System.currentTimeMillis()%10000+"("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": TIMER " + timerID);
+
     synchronized (mLock) {
       if(mCommitIndex > mLastApplied) mCommitIndex = mLastApplied;
       if(timerID == POLLING_TIMER_C+mID) { // poll vote status
@@ -76,16 +85,20 @@ public class CandidateMode extends RaftMode {
 	int nYes = 1;
 	for(int i = 1 ; i < votes.length ; i ++) if(votes[i] == 0) nYes ++;
 	if(nYes > mConfig.getNumServers()/2) {
+	  over = true;
 	  pollingTimer.cancel();
 	  electionTimer.cancel();
 	  System.out.println ("("+this.getClass().getSimpleName()+")S" + mID + "." + mConfig.getCurrentTerm() + ": qualified for leader mode.");
 	  RaftServerImpl.setMode(new LeaderMode());
 	}
+	resetPolling();
       } else go(); // election finished without winner
     }
   }
 
   private void resetTimer() {
+    if(pollingTimer != null) pollingTimer.cancel();
+    if(electionTimer != null) electionTimer.cancel();
     int period = 0;
     if(mConfig.getTimeoutOverride() < 0)
       period = ThreadLocalRandom.current().nextInt(
@@ -93,5 +106,10 @@ public class CandidateMode extends RaftMode {
     else period = mConfig.getTimeoutOverride();
     pollingTimer = super.scheduleTimer(POLLING_INTERVAL, POLLING_TIMER_C+mID);
     electionTimer = super.scheduleTimer(period, mID);
+  }
+   
+  private void resetPolling() {
+    if(pollingTimer != null) pollingTimer.cancel();
+    if(!over) pollingTimer = super.scheduleTimer(POLLING_INTERVAL, POLLING_TIMER_C+mID);
   }
 }

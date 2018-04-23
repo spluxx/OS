@@ -6,18 +6,10 @@ NUM_SERVERS=3
 
 start_servers $NUM_SERVERS
 
-# wait for S3 to become leader
-sleep 1
+sleep 5
+echo "PHEW"
 
-# pause S3
 pause_server 3
-
-# wait for S2 become leader
 sleep 5
 
-# resume S3
-resume_server 3
-
-# wait for S3 to catch up
-sleep 2
 # END TEST
